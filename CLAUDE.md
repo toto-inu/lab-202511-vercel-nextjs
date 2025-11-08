@@ -47,29 +47,101 @@ Useful commands:
 - `neonctl branches create --project-id=[PROJECT_ID]` - Create branch
 - `neonctl connection-string [BRANCH_NAME]` - Get connection string
 
-## Architecture Plan
+## Architecture
 
-### Authentication & Authorization
-- **Vercel Auth**: Handles user authentication (supporting GitHub, Google, etc.)
-- **Authorization Pattern**: User-scoped database access where each record has a `user_id` column
-- All database operations must be performed server-side (API routes or Server Components)
-- Client never directly accesses the database
+### Current Implementation
+The application is located in the `app/` directory.
 
-### Database
-- **Provider**: Neon (Serverless PostgreSQL)
-- **Connection**: Database URL stored in Vercel environment variables as `DATABASE_URL`
-- **Schema Pattern**: Tables include `user_id` column to associate records with authenticated users
-
-### Technology Stack
+- **Framework**: Next.js 16 with App Router
 - **Package Manager**: Bun
-- **Framework**: Next.js
-- **Database**: Neon PostgreSQL
-- **Authentication**: Vercel Auth
-- **Deployment**: Vercel
+- **Database**: PostgreSQL (local via Docker, production via Neon)
+- **ORM**: Prisma
+- **Styling**: Tailwind CSS v4
+
+### Database Schema
+- **Todo Table**: id, title, description, completed, assigneeId (FK), createdAt, updatedAt
+- **Assignee Table**: id, name, email (unique), createdAt, updatedAt
+- **Relationship**: Todo → Assignee (many-to-one, optional)
+
+### Project Structure
+```
+app/
+├── actions/          # Server Actions for CRUD operations
+│   ├── todo.ts
+│   └── assignee.ts
+├── app/              # App Router pages
+│   ├── page.tsx      # Todo list page
+│   ├── assignees/
+│   │   └── page.tsx  # Assignee list page
+│   ├── layout.tsx    # Root layout with navigation
+│   └── globals.css
+├── components/       # React components
+│   ├── Navigation.tsx
+│   ├── TodoList.tsx
+│   ├── TodoItem.tsx
+│   ├── TodoForm.tsx
+│   ├── AssigneeList.tsx
+│   ├── AssigneeItem.tsx
+│   └── AssigneeForm.tsx
+├── lib/
+│   └── prisma.ts     # Prisma Client singleton
+└── prisma/
+    └── schema.prisma # Database schema
+```
 
 ## Development Commands
 
-Commands will be added here once the Next.js project is initialized with Bun.
+All commands should be run from the `app/` directory:
+
+```bash
+cd app
+
+# Install dependencies
+bun install
+
+# Start development server
+bun run dev
+
+# Build for production
+bun run build
+
+# Start production server
+bun run start
+
+# Run linter
+bun run lint
+```
+
+### Database Commands
+
+```bash
+# Start PostgreSQL with Docker (from project root)
+docker compose up -d
+
+# Stop PostgreSQL
+docker compose down
+
+# Generate Prisma Client
+bunx prisma generate
+
+# Create a new migration
+bunx prisma migrate dev --name <migration_name>
+
+# Apply migrations
+bunx prisma migrate deploy
+
+# Open Prisma Studio (database GUI)
+bunx prisma studio
+```
+
+### Technology Stack
+- **Package Manager**: Bun
+- **Framework**: Next.js 16 (App Router)
+- **Database**: PostgreSQL (Docker for local, Neon for production)
+- **ORM**: Prisma
+- **Styling**: Tailwind CSS v4
+- **Authentication**: Vercel Auth (planned)
+- **Deployment**: Vercel (planned)
 
 ## Key Implementation Principles
 

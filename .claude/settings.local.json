@@ -3,7 +3,10 @@
     "allow": [
       "Bash(cat:*)",
       "Bash(tree:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(bunx prisma generate:*)",
+      "Bash(docker compose:*)",
+      "Bash(bun run dev)"
     ],
     "deny": [
       "Read(**.env)",
