@@ -1,6 +1,10 @@
 import { getAssignees } from '@/actions/assignee'
 import AssigneeTable from '@/components/AssigneeTable'
 
+// 動的レンダリングを強制してキャッシュを無効化
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function AssigneesPage() {
   const assignees = await getAssignees()
 

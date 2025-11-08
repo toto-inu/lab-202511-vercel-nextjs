@@ -2,6 +2,10 @@ import { getTodos } from '@/actions/todo'
 import { getAssignees } from '@/actions/assignee'
 import TodoTable from '@/components/TodoTable'
 
+// 動的レンダリングを強制してキャッシュを無効化
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function Home() {
   const todos = await getTodos()
   const assignees = await getAssignees()

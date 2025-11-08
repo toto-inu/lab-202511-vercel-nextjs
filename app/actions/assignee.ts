@@ -37,6 +37,7 @@ export async function createAssignee(formData: FormData) {
   })
 
   revalidatePath('/assignees')
+  revalidatePath('/') // Todo一覧にも影響するため
 }
 
 export async function updateAssignee(id: string, formData: FormData) {
@@ -52,6 +53,7 @@ export async function updateAssignee(id: string, formData: FormData) {
   })
 
   revalidatePath('/assignees')
+  revalidatePath('/') // Todo一覧にも影響するため
 }
 
 export async function deleteAssignee(id: string) {
@@ -60,4 +62,5 @@ export async function deleteAssignee(id: string) {
   })
 
   revalidatePath('/assignees')
+  revalidatePath('/') // Todo一覧にも影響するため
 }

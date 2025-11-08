@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postinstall": "prisma generate && prisma migrate deploy",
     "start": "next start",
     "lint": "eslint",
     "db:seed": "bun prisma/seed.ts"
