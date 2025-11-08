@@ -5,6 +5,12 @@ import { Todo, Assignee } from '@prisma/client'
 import { toggleTodo, deleteTodo, createTodo, updateTodo } from '@/actions/todo'
 import Modal from './Modal'
 import ConfirmModal from './ConfirmModal'
+import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Pencil, Trash2, Plus } from 'lucide-react'
 
 type TodoWithAssignee = Todo & {
   assignee: Assignee | null
@@ -63,100 +69,89 @@ export default function TodoTable({ todos, assignees }: Props) {
 
   return (
     <>
-      <div className="mb-4">
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          + 新しいTodoを追加
-        </button>
+      <div className="mb-6">
+        <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" />
+          新しいTodoを追加
+        </Button>
       </div>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider w-12">
-                完了
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                タイトル
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                説明
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                担当者
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                作成日
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider w-32">
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+      <div className="rounded-xl border bg-card shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12"></TableHead>
+              <TableHead>タイトル</TableHead>
+              <TableHead>説明</TableHead>
+              <TableHead>担当者</TableHead>
+              <TableHead>作成日</TableHead>
+              <TableHead className="text-right w-32">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {todos.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-zinc-500">
+              <TableRow>
+                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                   Todoがまだありません
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               todos.map((todo) => (
-                <tr key={todo.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                  <td className="px-6 py-4">
-                    <input
-                      type="checkbox"
+                <TableRow key={todo.id}>
+                  <TableCell>
+                    <Checkbox
                       checked={todo.completed}
-                      onChange={() => handleToggle(todo)}
-                      className="w-5 h-5 cursor-pointer"
+                      onCheckedChange={() => handleToggle(todo)}
                     />
-                  </td>
-                  <td className="px-6 py-4">
+                  </TableCell>
+                  <TableCell className="font-medium">
                     <span
-                      className={`font-medium ${
-                        todo.completed ? 'line-through text-zinc-500' : ''
-                      }`}
+                      className={todo.completed ? 'line-through text-muted-foreground' : ''}
                     >
                       {todo.title}
                     </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
                       {todo.description || '-'}
                     </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-blue-600 dark:text-blue-400">
-                      {todo.assignee?.name || '-'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-zinc-500">
+                  </TableCell>
+                  <TableCell>
+                    {todo.assignee?.name ? (
+                      <Badge variant="secondary">{todo.assignee.name}</Badge>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
                       {new Date(todo.createdAt).toLocaleDateString('ja-JP')}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => handleEditClick(todo)}
-                      className="px-3 py-1 text-sm bg-zinc-200 dark:bg-zinc-700 rounded hover:bg-zinc-300 dark:hover:bg-zinc-600 mr-2"
-                    >
-                      編集
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(todo)}
-                      className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-                    >
-                      削除
-                    </button>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditClick(todo)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteClick(todo)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* 作成モーダル */}
@@ -167,20 +162,19 @@ export default function TodoTable({ todos, assignees }: Props) {
       >
         <form action={handleCreateSubmit} className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-1">
+            <label htmlFor="title" className="block text-sm font-medium mb-2">
               タイトル
             </label>
-            <input
+            <Input
               type="text"
               id="title"
               name="title"
               required
               placeholder="買い物に行く"
-              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800"
             />
           </div>
           <div>
-            <label htmlFor="description" className="block text-sm font-medium mb-1">
+            <label htmlFor="description" className="block text-sm font-medium mb-2">
               説明
             </label>
             <textarea
@@ -188,17 +182,17 @@ export default function TodoTable({ todos, assignees }: Props) {
               name="description"
               rows={3}
               placeholder="野菜と果物を買う"
-              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800"
+              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             />
           </div>
           <div>
-            <label htmlFor="assigneeId" className="block text-sm font-medium mb-1">
+            <label htmlFor="assigneeId" className="block text-sm font-medium mb-2">
               担当者
             </label>
             <select
               id="assigneeId"
               name="assigneeId"
-              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             >
               <option value="">なし</option>
               {assignees.map((assignee) => (
@@ -209,19 +203,16 @@ export default function TodoTable({ todos, assignees }: Props) {
             </select>
           </div>
           <div className="flex gap-2 justify-end pt-4">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => setIsCreateModalOpen(false)}
-              className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 rounded-md hover:bg-zinc-300 dark:hover:bg-zinc-600"
             >
               キャンセル
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
+            </Button>
+            <Button type="submit">
               追加
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>
@@ -238,20 +229,19 @@ export default function TodoTable({ todos, assignees }: Props) {
         >
           <form action={handleEditSubmit} className="space-y-4">
             <div>
-              <label htmlFor="edit-title" className="block text-sm font-medium mb-1">
+              <label htmlFor="edit-title" className="block text-sm font-medium mb-2">
                 タイトル
               </label>
-              <input
+              <Input
                 type="text"
                 id="edit-title"
                 name="title"
                 defaultValue={selectedTodo.title}
                 required
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800"
               />
             </div>
             <div>
-              <label htmlFor="edit-description" className="block text-sm font-medium mb-1">
+              <label htmlFor="edit-description" className="block text-sm font-medium mb-2">
                 説明
               </label>
               <textarea
@@ -259,18 +249,18 @@ export default function TodoTable({ todos, assignees }: Props) {
                 name="description"
                 defaultValue={selectedTodo.description || ''}
                 rows={3}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800"
+                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
               />
             </div>
             <div>
-              <label htmlFor="edit-assigneeId" className="block text-sm font-medium mb-1">
+              <label htmlFor="edit-assigneeId" className="block text-sm font-medium mb-2">
                 担当者
               </label>
               <select
                 id="edit-assigneeId"
                 name="assigneeId"
                 defaultValue={selectedTodo.assigneeId || ''}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800"
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
               >
                 <option value="">なし</option>
                 {assignees.map((assignee) => (
@@ -282,33 +272,28 @@ export default function TodoTable({ todos, assignees }: Props) {
             </div>
             <div>
               <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
+                <Checkbox
                   name="completed"
                   value="true"
                   defaultChecked={selectedTodo.completed}
-                  className="w-4 h-4"
                 />
                 <span className="text-sm font-medium">完了</span>
               </label>
             </div>
             <div className="flex gap-2 justify-end pt-4">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => {
                   setIsEditModalOpen(false)
                   setSelectedTodo(null)
                 }}
-                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 rounded-md hover:bg-zinc-300 dark:hover:bg-zinc-600"
               >
                 キャンセル
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
+              </Button>
+              <Button type="submit">
                 保存
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>

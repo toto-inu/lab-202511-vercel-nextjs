@@ -10,10 +10,16 @@ export default async function Home() {
   const todos = await getTodos()
   const assignees = await getAssignees()
 
+  const completedCount = todos.filter(t => t.completed).length
+  const totalCount = todos.length
+
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Todo一覧</h1>
+    <div className="container mx-auto py-10 px-4 max-w-6xl">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold tracking-tight mb-2">Todo一覧</h1>
+        <p className="text-muted-foreground">
+          {completedCount} / {totalCount} 件完了
+        </p>
       </div>
 
       <TodoTable todos={todos} assignees={assignees} />

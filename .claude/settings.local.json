@@ -6,7 +6,9 @@
       "WebSearch",
       "Bash(bunx prisma generate:*)",
       "Bash(docker compose:*)",
-      "Bash(bun run dev)"
+      "Bash(bun run dev)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot"
     ],
     "deny": [
       "Read(**.env)",
