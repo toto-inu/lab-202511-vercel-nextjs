@@ -1,0 +1,2 @@
+
+vercelのpostinstallが推奨か調査。

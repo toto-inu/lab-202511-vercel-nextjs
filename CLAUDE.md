@@ -130,9 +130,80 @@ bunx prisma migrate dev --name <migration_name>
 # Apply migrations
 bunx prisma migrate deploy
 
+# Seed database with sample data
+bun run db:seed
+
 # Open Prisma Studio (database GUI)
 bunx prisma studio
 ```
+
+## Deployment to Vercel
+
+### 1. Prepare Neon Database
+
+Create a PostgreSQL database on Neon:
+
+```bash
+# List your projects
+neonctl projects list
+
+# Get connection string (copy this for Vercel)
+neonctl connection-string <branch-name> --project-id=<project-id>
+```
+
+Or get it from the Neon Console: https://console.neon.tech
+
+### 2. Configure Vercel Environment Variables
+
+In your Vercel project dashboard:
+
+1. Go to **Settings** > **Environment Variables**
+2. Add the following variable:
+   - **Key**: `DATABASE_URL`
+   - **Value**: Your Neon connection string (from step 1)
+   - **Environments**: Production, Preview, Development (select all)
+
+Example Neon connection string format:
+```
+postgresql://[user]:[password]@[host]/[database]?sslmode=require
+```
+
+### 3. Deploy to Vercel
+
+#### Option A: Deploy via Vercel CLI
+
+```bash
+cd app
+vercel deploy --prod
+```
+
+#### Option B: Deploy via GitHub Integration
+
+1. Push your code to GitHub
+2. Connect your repository in Vercel Dashboard
+3. Vercel will automatically deploy on every push to main branch
+
+### 4. Run Migrations on Production
+
+After first deployment:
+
+```bash
+# SSH into Vercel or use their CLI
+vercel env pull .env.production
+bunx prisma migrate deploy
+```
+
+Or add to your build command in `package.json`:
+```json
+"build": "prisma migrate deploy && next build"
+```
+
+### Important Notes
+
+- **Local Development**: Uses Docker PostgreSQL at `localhost:5432`
+- **Production (Vercel)**: Uses Neon PostgreSQL (connection string from environment variable)
+- The application automatically uses the `DATABASE_URL` environment variable
+- Never commit `.env` file to git (it's in `.gitignore`)
 
 ### Technology Stack
 - **Package Manager**: Bun
