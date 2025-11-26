@@ -3,8 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { CheckSquare } from 'lucide-react'
+import { AuthButton } from './AuthButton'
+import type { Session } from 'next-auth'
 
-export default function Navigation() {
+interface NavigationProps {
+  session: Session | null
+}
+
+export default function Navigation({ session }: NavigationProps) {
   const pathname = usePathname()
 
   const links = [
@@ -37,6 +43,7 @@ export default function Navigation() {
               ))}
             </div>
           </div>
+          <AuthButton session={session} />
         </div>
       </div>
     </nav>

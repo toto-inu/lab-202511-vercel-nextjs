@@ -2,8 +2,11 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { requireAuth } from '@/lib/auth-utils'
 
 export async function getAssignees() {
+  await requireAuth()
+
   return await prisma.assignee.findMany({
     include: {
       _count: {
@@ -17,6 +20,8 @@ export async function getAssignees() {
 }
 
 export async function getAssigneeById(id: string) {
+  await requireAuth()
+
   return await prisma.assignee.findUnique({
     where: { id },
     include: {
@@ -26,6 +31,8 @@ export async function getAssigneeById(id: string) {
 }
 
 export async function createAssignee(formData: FormData) {
+  await requireAuth()
+
   const name = formData.get('name') as string
   const email = formData.get('email') as string
 
@@ -41,6 +48,8 @@ export async function createAssignee(formData: FormData) {
 }
 
 export async function updateAssignee(id: string, formData: FormData) {
+  await requireAuth()
+
   const name = formData.get('name') as string
   const email = formData.get('email') as string
 
@@ -57,6 +66,8 @@ export async function updateAssignee(id: string, formData: FormData) {
 }
 
 export async function deleteAssignee(id: string) {
+  await requireAuth()
+
   await prisma.assignee.delete({
     where: { id },
   })
