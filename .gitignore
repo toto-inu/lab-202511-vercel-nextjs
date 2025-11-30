@@ -1,1 +1,7 @@
 .vercel
+.clerk
+blog*md
+
+# AdminJS
+.adminjs/
+**/.adminjs/
