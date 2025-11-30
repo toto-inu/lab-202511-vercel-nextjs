@@ -1,5 +1,5 @@
 import { NextAdmin } from "@premieroctet/next-admin";
-import { getNextAdminProps } from "@premieroctet/next-admin/dist/appRouter";
+import { getNextAdminProps } from "@premieroctet/next-admin/appRouter";
 import { prisma } from "@/lib/prisma";
 import schema from "@/prisma/json-schema/json-schema.json";
 import "@/app/globals.css";

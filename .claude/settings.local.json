@@ -38,7 +38,8 @@
       "Bash(bun:*)",
       "Bash(git restore:*)",
       "Bash(git rm:*)",
-      "Bash(git rev-parse:*)"
+      "Bash(git rev-parse:*)",
+      "Bash(lsof:*)"
     ],
     "deny": [
       "Read(**.env)",

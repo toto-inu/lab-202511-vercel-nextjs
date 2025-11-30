@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { createHandler } from "@premieroctet/next-admin/dist/appHandler";
+import { createHandler } from "@premieroctet/next-admin/appHandler";
 
 const { run } = createHandler({
   apiBasePath: "/api/admin",
