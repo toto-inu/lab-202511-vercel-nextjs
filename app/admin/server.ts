@@ -40,7 +40,10 @@ const start = async () => {
               type: 'boolean',
             },
             assigneeId: {
-              isVisible: { list: true, filter: true, show: true, edit: true },
+              // AdminJS Prisma adapter should auto-detect this as a reference
+            },
+            assignee: {
+              isVisible: false,
             },
             createdAt: {
               isVisible: { list: true, filter: false, show: true, edit: false },
@@ -49,10 +52,10 @@ const start = async () => {
               isVisible: { list: false, filter: false, show: true, edit: false },
             },
           },
-          listProperties: ['id', 'title', 'completed', 'assigneeId', 'createdAt'],
+          listProperties: ['id', 'title', 'completed', 'createdAt'],
           showProperties: ['id', 'title', 'description', 'completed', 'assigneeId', 'createdAt', 'updatedAt'],
           editProperties: ['title', 'description', 'completed', 'assigneeId'],
-          filterProperties: ['id', 'title', 'completed', 'assigneeId'],
+          filterProperties: ['id', 'title', 'completed'],
         },
       },
       {
