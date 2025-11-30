@@ -8,7 +8,37 @@ async function main() {
   // 既存のデータを削除
   await prisma.todo.deleteMany()
   await prisma.assignee.deleteMany()
+  await prisma.user.deleteMany()
   console.log('Cleared existing data')
+
+  // テストユーザーを作成
+  const users = await Promise.all([
+    prisma.user.create({
+      data: {
+        clerkId: 'user_test_admin',
+        email: 'admin@example.com',
+        name: '管理者',
+        role: 'ADMIN',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        clerkId: 'user_test_user1',
+        email: 'user1@example.com',
+        name: 'ユーザー1',
+        role: 'USER',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        clerkId: 'user_test_user2',
+        email: 'user2@example.com',
+        name: 'ユーザー2',
+        role: 'USER',
+      },
+    }),
+  ])
+  console.log(`Created ${users.length} users`)
 
   // 担当者を作成（5名）
   const assignees = await Promise.all([
@@ -121,12 +151,16 @@ async function main() {
 
     const completed = Math.random() > 0.7
 
+    // ランダムにユーザーを割り当て
+    const randomUser = users[Math.floor(Math.random() * users.length)]
+
     const todo = await prisma.todo.create({
       data: {
         title: todoTitles[i],
         description: todoDescriptions[i],
         completed,
         assigneeId: randomAssignee?.id,
+        createdById: randomUser.id,
       },
     })
     todos.push(todo)

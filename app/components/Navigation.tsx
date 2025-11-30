@@ -3,9 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { CheckSquare } from 'lucide-react'
+import { UserButton, SignInButton, useAuth } from '@clerk/nextjs'
 
 export default function Navigation() {
   const pathname = usePathname()
+  const { isSignedIn } = useAuth()
 
   const links = [
     { href: '/', label: 'Todo一覧' },
@@ -36,6 +38,17 @@ export default function Navigation() {
                 </Link>
               ))}
             </div>
+          </div>
+          <div className="flex items-center gap-4">
+            {isSignedIn ? (
+              <UserButton afterSignOutUrl="/sign-in" />
+            ) : (
+              <SignInButton mode="modal">
+                <button className="px-4 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                  サインイン
+                </button>
+              </SignInButton>
+            )}
           </div>
         </div>
       </div>
