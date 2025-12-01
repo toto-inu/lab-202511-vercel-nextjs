@@ -6,13 +6,13 @@ import "@/app/globals.css";
 import { redirect } from "next/navigation";
 
 /**
- * Next-Admin Dashboard Page
+ * Next-Admin 管理画面ページ
  *
- * WARNING: This admin interface is currently protected with a basic password check.
- * For production, you should implement proper authentication (e.g., Clerk, NextAuth)
- * with role-based access control.
+ * 警告: この管理画面は現在、基本的なパスワードチェックで保護されています。
+ * 本番環境では、適切な認証システム（Clerk、NextAuthなど）と
+ * ロールベースのアクセス制御を実装してください。
  *
- * TODO: Add Clerk authentication with ADMIN role check
+ * TODO: ClerkのADMINロールチェックによる認証を追加
  */
 export default async function AdminPage({
   params,
@@ -21,18 +21,18 @@ export default async function AdminPage({
   params: Promise<{ nextadmin: string[] }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // Basic authentication check - Replace with proper auth in production
-  // For now, check for an admin password via environment variable
+  // 基本的な認証チェック - 本番環境では適切な認証に置き換えてください
+  // 現在は環境変数の管理者パスワードをチェック
   const adminPassword = process.env.ADMIN_PASSWORD;
 
   if (!adminPassword) {
-    // If no password is set, redirect to home with a warning
-    console.warn("ADMIN_PASSWORD environment variable is not set. Admin access is blocked.");
+    // パスワードが設定されていない場合、ホームにリダイレクト
+    console.warn("ADMIN_PASSWORD環境変数が設定されていません。管理画面へのアクセスをブロックしました。");
     redirect("/");
   }
 
-  // In a real implementation, you would check user session here
-  // For example with Clerk:
+  // 実際の実装では、ここでユーザーセッションをチェックします
+  // Clerkを使用する場合の例:
   // const { userId, sessionClaims } = await auth();
   // if (!userId || sessionClaims?.metadata?.role !== 'admin') {
   //   redirect('/');
