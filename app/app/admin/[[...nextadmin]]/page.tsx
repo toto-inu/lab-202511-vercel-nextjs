@@ -2,7 +2,6 @@ import { NextAdmin } from "@premieroctet/next-admin/adapters/next";
 import { getNextAdminProps } from "@premieroctet/next-admin/appRouter";
 import { prisma } from "@/lib/prisma";
 import schema from "@/lib/next-admin-schema";
-import "@/app/globals.css";
 import { redirect } from "next/navigation";
 
 /**
