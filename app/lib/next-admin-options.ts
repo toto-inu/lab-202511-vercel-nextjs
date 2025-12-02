@@ -22,6 +22,11 @@ export const options: NextAdminOptions = {
       },
       edit: {
         display: ["title", "description", "completed", "assigneeId"],
+        fields: {
+          createdById: {
+            disabled: true,
+          },
+        },
       },
     },
     Assignee: {

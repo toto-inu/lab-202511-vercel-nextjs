@@ -25,4 +25,4 @@ const { run } = createHandler({
   },
 });
 
-export { run as DELETE, run as GET, run as POST, run as PUT };
+export { run as DELETE, run as GET, run as POST, run as PUT, run as PATCH };

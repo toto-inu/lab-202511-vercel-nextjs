@@ -53,12 +53,6 @@
           "type": "boolean",
           "default": false
         },
-        "assigneeId": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
@@ -66,12 +60,6 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
-        },
-        "createdById": {
-          "type": [
-            "string",
-            "null"
-          ]
         },
         "assignee": {
           "anyOf": [
