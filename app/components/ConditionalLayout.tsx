@@ -15,7 +15,8 @@ export default function ConditionalLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isAdminPath = pathname.startsWith("/admin");
+  // 厳密なadminパスチェック: /admin または /admin/ で始まるもののみ
+  const isAdminPath = pathname ? /^\/admin(?:\/|$)/.test(pathname) : false;
 
   if (isAdminPath) {
     // 管理画面: ナビゲーションバーなし、スタイリングなし

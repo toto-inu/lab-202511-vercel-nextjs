@@ -1,7 +1,8 @@
 import { NextAdmin } from "@premieroctet/next-admin/adapters/next";
 import { getNextAdminProps } from "@premieroctet/next-admin/appRouter";
 import { prisma } from "@/lib/prisma";
-import schema from "@/lib/next-admin-schema";
+import schema from "@/prisma/json-schema/json-schema.json";
+import { options } from "@/lib/next-admin-options";
 import { redirect } from "next/navigation";
 
 /**
@@ -47,7 +48,10 @@ export default async function AdminPage({
     apiBasePath: "/api/admin",
     prisma,
     schema,
+    options,
   });
 
+  // App Routerでは、optionsをNextAdminコンポーネントに直接渡さない
+  // (formatter等の関数が含まれているとエラーになる)
   return <NextAdmin {...props} />;
 }

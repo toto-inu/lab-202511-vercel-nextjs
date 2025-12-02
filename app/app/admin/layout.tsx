@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 /**
  * 管理画面専用レイアウト
  *
- * 既存のアプリケーションのナビゲーションバーを非表示にし、
  * Next-Adminの独自UIのみを表示します。
+ * スタイルはglobals.cssで統合管理されています。
  */
 export default function AdminLayout({
   children,

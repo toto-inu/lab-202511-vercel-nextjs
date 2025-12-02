@@ -1,3 +1,4 @@
 import schema from "@/prisma/json-schema/json-schema.json";
 
-export default schema;
+// JSON schemaを適切な形式でエクスポート
+export default schema as any;

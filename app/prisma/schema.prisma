@@ -1,12 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 generator jsonSchema {
-  provider = "prisma-json-schema-generator"
+  provider              = "prisma-json-schema-generator"
   includeRequiredFields = "true"
 }
 
@@ -25,12 +22,30 @@ model Assignee {
 }
 
 model Todo {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String?
-  completed   Boolean  @default(false)
+  completed   Boolean   @default(false)
   assigneeId  String?
-  assignee    Assignee? @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+  assignee    Assignee? @relation(fields: [assigneeId], references: [id])
+  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id        String   @id
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Todo      Todo[]
+}
+
+enum Role {
+  USER
+  ADMIN
 }

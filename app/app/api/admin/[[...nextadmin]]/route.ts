@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { createHandler } from "@premieroctet/next-admin/appHandler";
+import { options } from "@/lib/next-admin-options";
 import { NextResponse } from "next/server";
 
 const { run } = createHandler({
   apiBasePath: "/api/admin",
   prisma,
+  options,
   onRequest: async (req) => {
     // 基本的な認証チェック - 本番環境では適切な認証に置き換えてください
     const adminPassword = process.env.ADMIN_PASSWORD;
@@ -23,4 +25,4 @@ const { run } = createHandler({
   },
 });
 
-export { run as DELETE, run as GET, run as POST };
+export { run as DELETE, run as GET, run as POST, run as PUT };
