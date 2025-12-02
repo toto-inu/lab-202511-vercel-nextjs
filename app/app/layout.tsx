@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import ConditionalLayout from "@/components/ConditionalLayout";
+import Navigation from "@/components/Navigation";
+import { headers } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,17 +19,31 @@ export const metadata: Metadata = {
   description: "シンプルなTodoアプリケーション",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+
+  const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isDevLoginPath = pathname === "/dev-login";
+  const showNavigation = !isAdminPath && !isDevLoginPath;
+
   return (
     <html lang="ja">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <ConditionalLayout>{children}</ConditionalLayout>
+        {showNavigation && <Navigation />}
+        {showNavigation ? (
+          <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+            {children}
+          </main>
+        ) : (
+          <>{children}</>
+        )}
       </body>
     </html>
   );

@@ -1,6 +1,444 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "Plan": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "maxProjects": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "maxUsersPerTenant": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "maxTodosPerProject": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "features": {
+          "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ]
+        },
+        "price": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "billingCycle": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tenants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Tenant"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "displayName",
+        "updatedAt"
+      ]
+    },
+    "Tenant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plan": {
+          "$ref": "#/definitions/Plan"
+        },
+        "status": {
+          "type": "string",
+          "default": "ACTIVE",
+          "enum": [
+            "ACTIVE",
+            "TRIAL",
+            "SUSPENDED",
+            "CANCELLED"
+          ]
+        },
+        "trialEndsAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "settings": {
+          "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TenantMember"
+          }
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Project"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "slug",
+        "planId",
+        "updatedAt"
+      ]
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isGlobalAdmin": {
+          "type": "boolean",
+          "default": false
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tenantMemberships": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TenantMember"
+          }
+        },
+        "projectMemberships": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProjectMember"
+          }
+        },
+        "createdTodos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Todo"
+          }
+        }
+      },
+      "required": [
+        "email",
+        "name",
+        "updatedAt"
+      ]
+    },
+    "TenantMember": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        },
+        "tenant": {
+          "$ref": "#/definitions/Tenant"
+        },
+        "role": {
+          "type": "string",
+          "default": "MEMBER",
+          "enum": [
+            "OWNER",
+            "ADMIN",
+            "MEMBER"
+          ]
+        },
+        "invitedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "invitedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "tenantId",
+        "updatedAt"
+      ]
+    },
+    "Project": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "slug": {
+          "type": "string"
+        },
+        "tenant": {
+          "$ref": "#/definitions/Tenant"
+        },
+        "settings": {
+          "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ]
+        },
+        "archived": {
+          "type": "boolean",
+          "default": false
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProjectMember"
+          }
+        },
+        "todos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Todo"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "slug",
+        "tenantId",
+        "updatedAt"
+      ]
+    },
+    "ProjectMember": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        },
+        "project": {
+          "$ref": "#/definitions/Project"
+        },
+        "role": {
+          "type": "string",
+          "default": "VIEWER",
+          "enum": [
+            "ADMIN",
+            "EDITOR",
+            "VIEWER"
+          ]
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "projectId",
+        "updatedAt"
+      ]
+    },
+    "Todo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed": {
+          "type": "boolean",
+          "default": false
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "project": {
+          "$ref": "#/definitions/Project"
+        },
+        "createdBy": {
+          "$ref": "#/definitions/User"
+        },
+        "assignee": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Assignee"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "priority": {
+          "type": "string",
+          "default": "MEDIUM",
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "URGENT"
+          ]
+        },
+        "dueDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "title",
+        "tenantId",
+        "projectId",
+        "createdById",
+        "updatedAt"
+      ]
+    },
     "Assignee": {
       "type": "object",
       "properties": {
@@ -29,66 +467,37 @@
         }
       },
       "required": [
-        "id",
         "name",
         "email",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "Todo": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "completed": {
-          "type": "boolean",
-          "default": false
-        },
-        "assignee": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Assignee"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "title",
-        "createdAt",
         "updatedAt"
       ]
     }
   },
   "type": "object",
   "properties": {
-    "assignee": {
-      "$ref": "#/definitions/Assignee"
+    "plan": {
+      "$ref": "#/definitions/Plan"
+    },
+    "tenant": {
+      "$ref": "#/definitions/Tenant"
+    },
+    "user": {
+      "$ref": "#/definitions/User"
+    },
+    "tenantMember": {
+      "$ref": "#/definitions/TenantMember"
+    },
+    "project": {
+      "$ref": "#/definitions/Project"
+    },
+    "projectMember": {
+      "$ref": "#/definitions/ProjectMember"
     },
     "todo": {
       "$ref": "#/definitions/Todo"
+    },
+    "assignee": {
+      "$ref": "#/definitions/Assignee"
     }
   }
 }

@@ -15,6 +15,214 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// =======================
+// Plan & Tenant
+// =======================
+
+model Plan {
+  id          String   @id @default(cuid())
+  name        String   @unique  // "FREE", "PRO", "ENTERPRISE"
+  displayName String            // "Free Plan", "Pro Plan", "Enterprise Plan"
+  description String?
+
+  // 機能制限
+  maxProjects        Int?     // nullは無制限
+  maxUsersPerTenant  Int?
+  maxTodosPerProject Int?
+
+  // 機能フラグ
+  features Json @default("{}")  // { "advancedReporting": true, "apiAccess": false, ... }
+
+  // 価格情報（将来の拡張用）
+  price        Decimal? @db.Decimal(10, 2)
+  billingCycle String?  // "MONTHLY", "YEARLY"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenants Tenant[]
+}
+
+model Tenant {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique  // URL用: acme-corp
+  description String?
+
+  // プラン関連
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  // サブスクリプション状態
+  status      TenantStatus @default(ACTIVE)  // ACTIVE, SUSPENDED, CANCELLED
+  trialEndsAt DateTime?
+
+  // 設定
+  settings Json @default("{}")  // テナント固有設定
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  members  TenantMember[]
+  projects Project[]
+}
+
+enum TenantStatus {
+  ACTIVE
+  TRIAL
+  SUSPENDED
+  CANCELLED
+}
+
+// =======================
+// User & Memberships
+// =======================
+
+model User {
+  id        String  @id @default(cuid())
+  email     String  @unique
+  name      String
+  avatarUrl String?
+
+  // グローバル管理者フラグ（システム管理者用）
+  isGlobalAdmin Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenantMemberships  TenantMember[]
+  projectMemberships ProjectMember[]
+  createdTodos       Todo[]         @relation("TodoCreator")
+}
+
+model TenantMember {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  role TenantRole @default(MEMBER)
+
+  // 招待・参加関連
+  invitedBy String?
+  invitedAt DateTime?
+  joinedAt  DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+enum TenantRole {
+  OWNER  // テナント所有者。全権限
+  ADMIN  // テナント管理者。ユーザー管理、プロジェクト管理
+  MEMBER // 一般メンバー。割り当てられたプロジェクトのみアクセス
+}
+
+// =======================
+// Project
+// =======================
+
+model Project {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  slug        String  // テナント内で一意
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // プロジェクト設定
+  settings Json    @default("{}")
+  archived Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  members ProjectMember[]
+  todos   Todo[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+}
+
+model ProjectMember {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  role ProjectRole @default(VIEWER)
+
+  joinedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+enum ProjectRole {
+  ADMIN  // プロジェクト管理者。メンバー管理、設定変更
+  EDITOR // 編集者。Todo作成・編集・削除
+  VIEWER // 閲覧者。Todoの閲覧のみ
+}
+
+// =======================
+// Todo & Assignee
+// =======================
+
+model Todo {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+  completed   Boolean @default(false)
+
+  // マルチテナント対応
+  tenantId  String
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // 作成者
+  createdById String
+  createdBy   User   @relation("TodoCreator", fields: [createdById], references: [id])
+
+  // 担当者（既存のAssignee）
+  assigneeId String?
+  assignee   Assignee? @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  // 優先度・期限（将来拡張）
+  priority TodoPriority @default(MEDIUM)
+  dueDate  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@index([createdById])
+}
+
+enum TodoPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
 model Assignee {
   id        String   @id @default(cuid())
   name      String
@@ -22,15 +230,4 @@ model Assignee {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   todos     Todo[]
-}
-
-model Todo {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  completed   Boolean  @default(false)
-  assigneeId  String?
-  assignee    Assignee? @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }

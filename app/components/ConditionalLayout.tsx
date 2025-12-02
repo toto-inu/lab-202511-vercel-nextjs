@@ -16,9 +16,10 @@ export default function ConditionalLayout({
 }) {
   const pathname = usePathname();
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isDevLoginPath = pathname === "/dev-login";
 
-  if (isAdminPath) {
-    // 管理画面: ナビゲーションバーなし、スタイリングなし
+  if (isAdminPath || isDevLoginPath) {
+    // 管理画面・ログイン画面: ナビゲーションバーなし、スタイリングなし
     return <>{children}</>;
   }
 
