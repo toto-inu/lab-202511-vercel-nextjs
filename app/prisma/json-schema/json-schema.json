@@ -29,8 +29,10 @@
         }
       },
       "required": [
+        "id",
         "name",
         "email",
+        "createdAt",
         "updatedAt"
       ]
     },
@@ -73,7 +75,9 @@
         }
       },
       "required": [
+        "id",
         "title",
+        "createdAt",
         "updatedAt"
       ]
     }
