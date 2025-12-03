@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:admin": "cd admin && bun run dev",
+    "dev:all": "bun run dev & bun run dev:admin",
     "build": "next build",
     "postinstall": "prisma generate && prisma migrate deploy",
     "start": "next start",
@@ -14,24 +16,43 @@
     "db:seed": "bun prisma/seed.ts"
   },
   "dependencies": {
+    "@adminjs/design-system": "^4.1.1",
+    "@adminjs/express": "6.1.0",
+    "@adminjs/prisma": "5.0.1",
     "@prisma/client": "^6.19.0",
+    "@tiptap/core": "^3.11.1",
+    "@tiptap/extension-horizontal-rule": "^3.11.1",
+    "@tiptap/pm": "^3.11.1",
+    "@tiptap/starter-kit": "^3.11.1",
+    "@types/express": "^5.0.5",
+    "@types/express-session": "^1.18.2",
+    "adminjs": "7.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "express": "^5.1.0",
+    "express-formidable": "^1.2.0",
+    "express-session": "^1.18.2",
     "lucide-react": "^0.553.0",
     "next": "16.0.1",
     "prisma": "^6.19.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
-    "eslint-config-next": "16.0.1"
+    "eslint-config-next": "16.0.1",
+    "tailwindcss": "^4",
+    "tsx": "^4.20.6",
+    "typescript": "^5"
+  },
+  "resolutions": {
+    "@tiptap/core": "3.11.1",
+    "@tiptap/pm": "3.11.1"
   }
 }
