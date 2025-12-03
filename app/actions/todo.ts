@@ -91,7 +91,10 @@ export async function createTodo(projectId: string, formData: FormData) {
     )
   }
 
-  const priority = (priorityStr as TodoPriority) || 'MEDIUM'
+  const validPriorities: TodoPriority[] = ['LOW', 'MEDIUM', 'HIGH']
+  const priority: TodoPriority = priorityStr && validPriorities.includes(priorityStr as TodoPriority)
+    ? (priorityStr as TodoPriority)
+    : 'MEDIUM'
 
   await prisma.todo.create({
     data: {
@@ -139,7 +142,10 @@ export async function updateTodo(id: string, formData: FormData) {
     throw new Error('Todo not found')
   }
 
-  const priority = priorityStr ? (priorityStr as TodoPriority) : undefined
+  const validPriorities: TodoPriority[] = ['LOW', 'MEDIUM', 'HIGH']
+  const priority: TodoPriority | undefined = priorityStr && validPriorities.includes(priorityStr as TodoPriority)
+    ? (priorityStr as TodoPriority)
+    : undefined
 
   await prisma.todo.update({
     where: { id },

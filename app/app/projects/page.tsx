@@ -36,7 +36,11 @@ export default async function ProjectsPage() {
       </div>
     )
   } catch (error) {
-    // 認証エラーの場合はログインページへリダイレクト
-    redirect('/dev-login')
+    // 認証エラーの場合のみログインページへリダイレクト
+    if (error instanceof Error && error.message.includes('ログインが必要')) {
+      redirect('/dev-login')
+    }
+    // その他のエラーは再スロー
+    throw error
   }
 }
