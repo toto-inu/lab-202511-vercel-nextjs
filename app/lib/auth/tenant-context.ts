@@ -44,6 +44,35 @@ export async function getCurrentTenant() {
     throw new Error('User not found')
   }
 
+  // グローバル管理者の場合は、最初のテナントを返す（または管理画面用に全テナントアクセス可能）
+  if (user.isGlobalAdmin) {
+    const tenantId = await getCurrentTenantId()
+
+    // Cookie指定がある場合はそのテナントを返す
+    if (tenantId) {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: tenantId },
+        include: { plan: true }
+      })
+
+      if (tenant) {
+        return tenant
+      }
+    }
+
+    // デフォルトでは最初のテナントを返す
+    const firstTenant = await prisma.tenant.findFirst({
+      include: { plan: true },
+      orderBy: { createdAt: 'asc' }
+    })
+
+    if (firstTenant) {
+      return firstTenant
+    }
+
+    throw new Error('No tenants exist in the system')
+  }
+
   const tenantId = await getCurrentTenantId()
 
   if (!tenantId) {
@@ -79,6 +108,7 @@ export async function getCurrentTenant() {
 
 /**
  * ユーザーが所属する全Tenantを取得
+ * グローバル管理者の場合は全テナントを返す
  */
 export async function getUserTenants() {
   const userId = await getCurrentDevUserId()
@@ -89,6 +119,19 @@ export async function getUserTenants() {
   const user = await getDevUser(userId)
   if (!user) {
     throw new Error('User not found')
+  }
+
+  // グローバル管理者は全テナントにアクセス可能
+  if (user.isGlobalAdmin) {
+    const allTenants = await prisma.tenant.findMany({
+      include: { plan: true },
+      orderBy: { createdAt: 'asc' }
+    })
+
+    return allTenants.map(tenant => ({
+      ...tenant,
+      role: 'OWNER' as const // グローバル管理者は全権限を持つ
+    }))
   }
 
   const memberships = await prisma.tenantMember.findMany({
