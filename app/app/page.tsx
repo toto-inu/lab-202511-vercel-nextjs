@@ -1,28 +1,25 @@
-import { getTodos } from '@/actions/todo'
-import { getAssignees } from '@/actions/assignee'
-import TodoTable from '@/components/TodoTable'
+import { redirect } from 'next/navigation'
+import { getCurrentTenant } from '@/lib/auth/tenant-context'
+import { getProjects } from '@/actions/project'
 
 // 動的レンダリングを強制してキャッシュを無効化
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function Home() {
-  const todos = await getTodos()
-  const assignees = await getAssignees()
+  try {
+    const tenant = await getCurrentTenant()
+    const projects = await getProjects(tenant.id)
 
-  const completedCount = todos.filter(t => t.completed).length
-  const totalCount = todos.length
+    // プロジェクトが存在する場合は最初のプロジェクトへリダイレクト
+    if (projects.length > 0) {
+      redirect(`/projects/${projects[0].id}`)
+    }
 
-  return (
-    <div className="container mx-auto py-10 px-4 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold tracking-tight mb-2">Todo一覧</h1>
-        <p className="text-muted-foreground">
-          {completedCount} / {totalCount} 件完了
-        </p>
-      </div>
-
-      <TodoTable todos={todos} assignees={assignees} />
-    </div>
-  )
+    // プロジェクトがない場合はプロジェクト一覧へ
+    redirect('/projects')
+  } catch (error) {
+    // 認証エラーの場合はログインページへリダイレクト
+    redirect('/dev-login')
+  }
 }

@@ -7,8 +7,10 @@
 import { getAllDevUsers } from '@/lib/dev-auth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { prisma } from '@/lib/prisma'
 
 const DEV_USER_COOKIE = 'dev-user-id'
+const TENANT_COOKIE_NAME = 'current-tenant-id'
 
 /**
  * 全ユーザーを取得（ログイン画面用）
@@ -27,6 +29,12 @@ export async function devLogin(formData: FormData) {
     throw new Error('User ID is required')
   }
 
+  // ユーザーのデフォルトTenantを取得
+  const membership = await prisma.tenantMember.findFirst({
+    where: { userId },
+    orderBy: { joinedAt: 'asc' }
+  })
+
   const cookieStore = await cookies()
   cookieStore.set(DEV_USER_COOKIE, userId, {
     httpOnly: true,
@@ -34,6 +42,16 @@ export async function devLogin(formData: FormData) {
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30 // 30日
   })
+
+  // デフォルトTenantもCookieに設定
+  if (membership) {
+    cookieStore.set(TENANT_COOKIE_NAME, membership.tenantId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30 // 30日
+    })
+  }
 
   redirect('/')
 }
@@ -44,5 +62,15 @@ export async function devLogin(formData: FormData) {
 export async function devLogout() {
   const cookieStore = await cookies()
   cookieStore.delete(DEV_USER_COOKIE)
+  cookieStore.delete('current-tenant-id')
   redirect('/dev-login')
+}
+
+/**
+ * Cookieをクリア（ログイン画面用）
+ */
+export async function clearDevCookies() {
+  const cookieStore = await cookies()
+  cookieStore.delete(DEV_USER_COOKIE)
+  cookieStore.delete('current-tenant-id')
 }

@@ -25,9 +25,10 @@ type AssigneeWithCount = Assignee & {
 type Props = {
   todos: TodoWithAssignee[]
   assignees: AssigneeWithCount[]
+  projectId: string
 }
 
-export default function TodoTable({ todos, assignees }: Props) {
+export default function TodoTable({ todos, assignees, projectId }: Props) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -55,7 +56,7 @@ export default function TodoTable({ todos, assignees }: Props) {
   }
 
   const handleCreateSubmit = async (formData: FormData) => {
-    await createTodo(formData)
+    await createTodo(projectId, formData)
     setIsCreateModalOpen(false)
   }
 

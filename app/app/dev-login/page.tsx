@@ -3,10 +3,10 @@ import { getCurrentDevUserId } from '@/lib/dev-auth'
 import { redirect } from 'next/navigation'
 
 export default async function DevLoginPage() {
-  // すでにログイン済みの場合はホームへリダイレクト
+  // すでにログイン済みの場合はプロジェクト一覧へリダイレクト
   const userId = await getCurrentDevUserId()
   if (userId) {
-    redirect('/')
+    redirect('/projects')
   }
 
   const users = await getDevUsers()

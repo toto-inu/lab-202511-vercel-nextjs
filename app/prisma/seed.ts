@@ -3,112 +3,104 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('Starting seed...')
+  console.log('🌱 Seeding database...')
 
-  // 既存のデータを削除
+  // Clean up existing data
   await prisma.todo.deleteMany()
+  await prisma.assignee.deleteMany()
   await prisma.projectMember.deleteMany()
   await prisma.project.deleteMany()
   await prisma.tenantMember.deleteMany()
   await prisma.tenant.deleteMany()
   await prisma.user.deleteMany()
   await prisma.plan.deleteMany()
-  await prisma.assignee.deleteMany()
-  console.log('Cleared existing data')
 
-  // ==================
-  // 1. Planデータ作成
-  // ==================
+  // Create Plans
   const freePlan = await prisma.plan.create({
     data: {
       name: 'FREE',
-      displayName: 'Free Plan',
-      description: '個人・小規模チーム向け',
-      maxProjects: 3,
-      maxUsersPerTenant: 5,
-      maxTodosPerProject: 100,
-      features: {
-        advancedReporting: false,
-        apiAccess: false,
-        customRoles: false,
-        auditLog: false,
-        prioritySupport: false
-      }
+      displayName: 'Free',
+      maxProjects: 1,
+      maxUsersPerTenant: 3,
+      maxTodosPerProject: 10,
+      features: JSON.stringify([])
     }
   })
 
   const proPlan = await prisma.plan.create({
     data: {
       name: 'PRO',
-      displayName: 'Pro Plan',
-      description: '中規模チーム向け',
-      maxProjects: 50,
-      maxUsersPerTenant: 50,
+      displayName: 'Pro',
+      maxProjects: 10,
+      maxUsersPerTenant: 20,
       maxTodosPerProject: 1000,
-      price: 2900,
-      billingCycle: 'MONTHLY',
-      features: {
-        advancedReporting: true,
-        apiAccess: true,
-        customRoles: false,
-        auditLog: false,
-        prioritySupport: true
-      }
+      features: JSON.stringify(['priority', 'due_date'])
     }
   })
 
   const enterprisePlan = await prisma.plan.create({
     data: {
       name: 'ENTERPRISE',
-      displayName: 'Enterprise Plan',
-      description: '大規模組織向け',
-      maxProjects: null, // 無制限
-      maxUsersPerTenant: null,
-      maxTodosPerProject: null,
-      price: null, // カスタム価格
-      features: {
-        advancedReporting: true,
-        apiAccess: true,
-        customRoles: true,
-        auditLog: true,
-        prioritySupport: true
-      }
+      displayName: 'Enterprise',
+      maxProjects: -1,
+      maxUsersPerTenant: -1,
+      maxTodosPerProject: -1,
+      features: JSON.stringify(['priority', 'due_date', 'custom_fields', 'api_access'])
     }
   })
 
-  console.log('Created 3 plans')
+  console.log('✅ Plans created')
 
-  // ==================
-  // 2. Tenantデータ作成
-  // ==================
-  const tenantA = await prisma.tenant.create({
+  // Create Users
+  const alice = await prisma.user.create({
     data: {
-      name: 'Tenant A',
-      slug: 'tenant-a',
-      description: 'テストテナントA（Freeプラン）',
-      planId: freePlan.id,
-      status: 'ACTIVE'
+      email: 'alice@example.com',
+      name: 'Alice (Tenant A Owner)',
+      isGlobalAdmin: false
     }
   })
 
-  const tenantB = await prisma.tenant.create({
+  const bob = await prisma.user.create({
     data: {
-      name: 'Tenant B',
-      slug: 'tenant-b',
-      description: 'テストテナントB（Proプラン）',
-      planId: proPlan.id,
-      status: 'ACTIVE'
+      email: 'bob@example.com',
+      name: 'Bob (Tenant A Admin)',
+      isGlobalAdmin: false
     }
   })
 
-  console.log('Created 2 tenants')
+  const charlie = await prisma.user.create({
+    data: {
+      email: 'charlie@example.com',
+      name: 'Charlie (Tenant B Owner)',
+      isGlobalAdmin: false
+    }
+  })
 
-  // ==================
-  // 3. Userデータ作成（7人）
-  // ==================
+  const david = await prisma.user.create({
+    data: {
+      email: 'david@example.com',
+      name: 'David (Tenant A Member)',
+      isGlobalAdmin: false
+    }
+  })
 
-  // グローバル管理者
-  const adminUser = await prisma.user.create({
+  const eve = await prisma.user.create({
+    data: {
+      email: 'eve@example.com',
+      name: 'Eve (Tenant B Admin)',
+      isGlobalAdmin: false
+    }
+  })
+
+  const frank = await prisma.user.create({
+    data: {
+      email: 'frank@example.com',
+      name: 'Frank (Tenant B Member)',
+      isGlobalAdmin: false
+    }
+  })
+
+  const admin = await prisma.user.create({
     data: {
       email: 'admin@example.com',
       name: 'Global Admin',
@@ -116,323 +108,268 @@ async function main() {
     }
   })
 
-  // TenantA のユーザー
-  const aliceUser = await prisma.user.create({
+  console.log('✅ Users created')
+
+  // Create Tenants
+  const tenantA = await prisma.tenant.create({
     data: {
-      email: 'alice@example.com',
-      name: 'Alice (TenantA OWNER)'
+      name: 'Tenant A (Pro Plan)',
+      slug: 'tenant-a',
+      planId: proPlan.id
     }
   })
 
-  const bobUser = await prisma.user.create({
+  const tenantB = await prisma.tenant.create({
     data: {
-      email: 'bob@example.com',
-      name: 'Bob (TenantA ADMIN)'
+      name: 'Tenant B (Free Plan)',
+      slug: 'tenant-b',
+      planId: freePlan.id
     }
   })
 
-  const charlieUser = await prisma.user.create({
-    data: {
-      email: 'charlie@example.com',
-      name: 'Charlie (TenantA MEMBER)'
-    }
+  console.log('✅ Tenants created')
+
+  // Create Tenant Memberships
+  await prisma.tenantMember.createMany({
+    data: [
+      { userId: alice.id, tenantId: tenantA.id, role: 'OWNER' },
+      { userId: bob.id, tenantId: tenantA.id, role: 'ADMIN' },
+      { userId: david.id, tenantId: tenantA.id, role: 'MEMBER' },
+      { userId: charlie.id, tenantId: tenantB.id, role: 'OWNER' },
+      { userId: eve.id, tenantId: tenantB.id, role: 'ADMIN' },
+      { userId: frank.id, tenantId: tenantB.id, role: 'MEMBER' }
+    ]
   })
 
-  // TenantB のユーザー
-  const daveUser = await prisma.user.create({
-    data: {
-      email: 'dave@example.com',
-      name: 'Dave (TenantB OWNER)'
-    }
-  })
+  console.log('✅ Tenant memberships created')
 
-  const eveUser = await prisma.user.create({
-    data: {
-      email: 'eve@example.com',
-      name: 'Eve (TenantB ADMIN)'
-    }
-  })
-
-  const frankUser = await prisma.user.create({
-    data: {
-      email: 'frank@example.com',
-      name: 'Frank (TenantB MEMBER)'
-    }
-  })
-
-  console.log('Created 7 users')
-
-  // ==================
-  // 4. TenantMemberデータ作成
-  // ==================
-
-  // TenantA members
-  await prisma.tenantMember.create({
-    data: {
-      userId: aliceUser.id,
-      tenantId: tenantA.id,
-      role: 'OWNER',
-      joinedAt: new Date()
-    }
-  })
-
-  await prisma.tenantMember.create({
-    data: {
-      userId: bobUser.id,
-      tenantId: tenantA.id,
-      role: 'ADMIN',
-      joinedAt: new Date()
-    }
-  })
-
-  await prisma.tenantMember.create({
-    data: {
-      userId: charlieUser.id,
-      tenantId: tenantA.id,
-      role: 'MEMBER',
-      joinedAt: new Date()
-    }
-  })
-
-  // TenantB members
-  await prisma.tenantMember.create({
-    data: {
-      userId: daveUser.id,
-      tenantId: tenantB.id,
-      role: 'OWNER',
-      joinedAt: new Date()
-    }
-  })
-
-  await prisma.tenantMember.create({
-    data: {
-      userId: eveUser.id,
-      tenantId: tenantB.id,
-      role: 'ADMIN',
-      joinedAt: new Date()
-    }
-  })
-
-  await prisma.tenantMember.create({
-    data: {
-      userId: frankUser.id,
-      tenantId: tenantB.id,
-      role: 'MEMBER',
-      joinedAt: new Date()
-    }
-  })
-
-  console.log('Created 6 tenant memberships')
-
-  // ==================
-  // 5. Projectデータ作成
-  // ==================
-
+  // Create Projects
   const projectA1 = await prisma.project.create({
     data: {
-      name: 'Project Alpha',
-      slug: 'alpha',
-      description: 'TenantAのプロジェクト1',
+      name: 'Project Alpha (Tenant A)',
+      slug: 'project-alpha',
+      description: 'First project for Tenant A',
       tenantId: tenantA.id
     }
   })
 
   const projectA2 = await prisma.project.create({
     data: {
-      name: 'Project Beta',
-      slug: 'beta',
-      description: 'TenantAのプロジェクト2',
+      name: 'Project Beta (Tenant A)',
+      slug: 'project-beta',
+      description: 'Second project for Tenant A',
       tenantId: tenantA.id
     }
   })
 
   const projectB1 = await prisma.project.create({
     data: {
-      name: 'Project Gamma',
-      slug: 'gamma',
-      description: 'TenantBのプロジェクト1',
+      name: 'Project Gamma (Tenant B)',
+      slug: 'project-gamma',
+      description: 'First project for Tenant B',
       tenantId: tenantB.id
     }
   })
 
-  console.log('Created 3 projects')
+  console.log('✅ Projects created')
 
-  // ==================
-  // 6. ProjectMemberデータ作成
-  // ==================
-
-  // ProjectA1 members (全員)
+  // Create Project Memberships
   await prisma.projectMember.createMany({
     data: [
-      { userId: aliceUser.id, projectId: projectA1.id, role: 'ADMIN' },
-      { userId: bobUser.id, projectId: projectA1.id, role: 'EDITOR' },
-      { userId: charlieUser.id, projectId: projectA1.id, role: 'VIEWER' }
+      { userId: alice.id, projectId: projectA1.id, role: 'ADMIN' },
+      { userId: bob.id, projectId: projectA1.id, role: 'EDITOR' },
+      { userId: david.id, projectId: projectA1.id, role: 'VIEWER' },
+      { userId: alice.id, projectId: projectA2.id, role: 'ADMIN' },
+      { userId: bob.id, projectId: projectA2.id, role: 'ADMIN' },
+      { userId: charlie.id, projectId: projectB1.id, role: 'ADMIN' },
+      { userId: eve.id, projectId: projectB1.id, role: 'EDITOR' },
+      { userId: frank.id, projectId: projectB1.id, role: 'VIEWER' }
     ]
   })
 
-  // ProjectA2 members (AliceとBobのみ)
-  await prisma.projectMember.createMany({
-    data: [
-      { userId: aliceUser.id, projectId: projectA2.id, role: 'ADMIN' },
-      { userId: bobUser.id, projectId: projectA2.id, role: 'EDITOR' }
-    ]
+  console.log('✅ Project memberships created')
+
+  // Create Assignees
+  const assignee1 = await prisma.assignee.create({
+    data: {
+      name: '山田太郎',
+      email: 'yamada@example.com'
+    }
   })
 
-  // ProjectB1 members (全員)
-  await prisma.projectMember.createMany({
-    data: [
-      { userId: daveUser.id, projectId: projectB1.id, role: 'ADMIN' },
-      { userId: eveUser.id, projectId: projectB1.id, role: 'EDITOR' },
-      { userId: frankUser.id, projectId: projectB1.id, role: 'VIEWER' }
-    ]
+  const assignee2 = await prisma.assignee.create({
+    data: {
+      name: '佐藤花子',
+      email: 'sato@example.com'
+    }
   })
 
-  console.log('Created project memberships')
+  const assignee3 = await prisma.assignee.create({
+    data: {
+      name: '鈴木次郎',
+      email: 'suzuki@example.com'
+    }
+  })
 
-  // ==================
-  // 7. 担当者を作成（既存のAssignee）
-  // ==================
-  const assignees = await Promise.all([
-    prisma.assignee.create({
-      data: {
-        name: '山田太郎',
-        email: 'yamada@example.com'
-      }
-    }),
-    prisma.assignee.create({
-      data: {
-        name: '佐藤花子',
-        email: 'sato@example.com'
-      }
-    }),
-    prisma.assignee.create({
-      data: {
-        name: '鈴木一郎',
-        email: 'suzuki@example.com'
-      }
-    }),
-    prisma.assignee.create({
-      data: {
-        name: '田中美咲',
-        email: 'tanaka@example.com'
-      }
-    }),
-    prisma.assignee.create({
-      data: {
-        name: '高橋健太',
-        email: 'takahashi@example.com'
-      }
-    })
-  ])
-  console.log(`Created ${assignees.length} assignees`)
+  const assignee4 = await prisma.assignee.create({
+    data: {
+      name: '田中美咲',
+      email: 'tanaka@example.com'
+    }
+  })
 
-  // ==================
-  // 8. Todoサンプルデータ作成
-  // ==================
+  const assignee5 = await prisma.assignee.create({
+    data: {
+      name: '高橋健一',
+      email: 'takahashi@example.com'
+    }
+  })
 
-  const todoTitles = [
-    '週次ミーティングの資料を作成',
-    'データベースのバックアップを取る',
-    '新機能の仕様書を確認',
-    'バグ修正: ログイン画面のエラー',
-    'テストケースを追加',
-    'APIドキュメントを更新',
-    'パフォーマンステストを実施',
-    'セキュリティ監査の準備',
-    'ユーザーフィードバックを分析',
-    'デザインレビューに参加'
-  ]
+  console.log('✅ Assignees created')
 
-  const todoDescriptions = [
-    '今週の進捗と来週の計画をまとめる',
-    '毎週金曜日の定例作業',
-    '開発チームとの打ち合わせ前に確認',
-    '優先度高: 本番環境で発生中',
-    'カバレッジ80%を目指す',
-    '最新のエンドポイント情報を反映',
-    '負荷テストツールを使用',
-    '外部監査に向けた準備',
-    '先月分のフィードバックを整理',
-    'デザイナーとの定例会議'
-  ]
-
-  const priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] as const
-
-  // ProjectA1 に5個
-  for (let i = 0; i < 5; i++) {
-    const randomAssignee = Math.random() > 0.3 ? assignees[Math.floor(Math.random() * assignees.length)] : null
-    const completed = Math.random() > 0.7
-
-    await prisma.todo.create({
-      data: {
-        title: todoTitles[i],
-        description: todoDescriptions[i],
-        completed,
+  // Create Todos for Project Alpha (Tenant A)
+  await prisma.todo.createMany({
+    data: [
+      {
+        title: 'データベース設計を完了する',
+        description: 'ER図を作成し、スキーマ定義を行う',
+        completed: false,
         tenantId: tenantA.id,
         projectId: projectA1.id,
-        createdById: aliceUser.id,
-        assigneeId: randomAssignee?.id,
-        priority: priorities[Math.floor(Math.random() * priorities.length)]
+        assigneeId: assignee1.id,
+        createdById: alice.id,
+        priority: 'HIGH',
+        dueDate: new Date('2025-12-10')
+      },
+      {
+        title: 'API仕様書を作成する',
+        description: 'OpenAPI形式でREST APIを定義',
+        completed: false,
+        tenantId: tenantA.id,
+        projectId: projectA1.id,
+        assigneeId: assignee2.id,
+        createdById: alice.id,
+        priority: 'MEDIUM'
+      },
+      {
+        title: 'ユニットテストを書く',
+        description: 'コアロジックのテストカバレッジ80%以上を目指す',
+        completed: true,
+        tenantId: tenantA.id,
+        projectId: projectA1.id,
+        assigneeId: assignee1.id,
+        createdById: bob.id,
+        priority: 'HIGH'
+      },
+      {
+        title: 'UIデザインレビュー',
+        description: 'Figmaデザインのレビューと承認',
+        completed: false,
+        tenantId: tenantA.id,
+        projectId: projectA1.id,
+        assigneeId: assignee3.id,
+        createdById: bob.id,
+        priority: 'LOW'
       }
-    })
-  }
+    ]
+  })
 
-  // ProjectA2 に3個
-  for (let i = 5; i < 8; i++) {
-    const randomAssignee = Math.random() > 0.3 ? assignees[Math.floor(Math.random() * assignees.length)] : null
-    const completed = Math.random() > 0.7
-
-    await prisma.todo.create({
-      data: {
-        title: todoTitles[i % todoTitles.length],
-        description: todoDescriptions[i % todoDescriptions.length],
-        completed,
+  // Create Todos for Project Beta (Tenant A)
+  await prisma.todo.createMany({
+    data: [
+      {
+        title: 'CI/CDパイプラインを構築',
+        description: 'GitHub Actionsでビルド・テスト・デプロイを自動化',
+        completed: false,
         tenantId: tenantA.id,
         projectId: projectA2.id,
-        createdById: bobUser.id,
-        assigneeId: randomAssignee?.id,
-        priority: priorities[Math.floor(Math.random() * priorities.length)]
+        assigneeId: assignee2.id,
+        createdById: alice.id,
+        priority: 'HIGH',
+        dueDate: new Date('2025-12-15')
+      },
+      {
+        title: 'セキュリティ監査',
+        description: '依存パッケージの脆弱性チェック',
+        completed: false,
+        tenantId: tenantA.id,
+        projectId: projectA2.id,
+        assigneeId: assignee3.id,
+        createdById: bob.id,
+        priority: 'MEDIUM'
       }
-    })
-  }
+    ]
+  })
 
-  // ProjectB1 に2個
-  for (let i = 8; i < 10; i++) {
-    const randomAssignee = Math.random() > 0.3 ? assignees[Math.floor(Math.random() * assignees.length)] : null
-    const completed = Math.random() > 0.7
-
-    await prisma.todo.create({
-      data: {
-        title: todoTitles[i % todoTitles.length],
-        description: todoDescriptions[i % todoDescriptions.length],
-        completed,
+  // Create Todos for Project Gamma (Tenant B)
+  await prisma.todo.createMany({
+    data: [
+      {
+        title: 'ランディングページを作成',
+        description: 'マーケティング向けLPのコーディング',
+        completed: false,
         tenantId: tenantB.id,
         projectId: projectB1.id,
-        createdById: daveUser.id,
-        assigneeId: randomAssignee?.id,
-        priority: priorities[Math.floor(Math.random() * priorities.length)]
+        assigneeId: assignee4.id,
+        createdById: charlie.id,
+        priority: 'HIGH'
+      },
+      {
+        title: 'メールテンプレート作成',
+        description: 'ウェルカムメール、パスワードリセットなど',
+        completed: true,
+        tenantId: tenantB.id,
+        projectId: projectB1.id,
+        assigneeId: assignee5.id,
+        createdById: charlie.id,
+        priority: 'LOW'
+      },
+      {
+        title: 'ドキュメント整備',
+        description: 'READMEとユーザーガイドを更新',
+        completed: false,
+        tenantId: tenantB.id,
+        projectId: projectB1.id,
+        assigneeId: assignee4.id,
+        createdById: eve.id,
+        priority: 'MEDIUM'
+      },
+      {
+        title: 'パフォーマンステスト',
+        description: '負荷テストを実施して最適化',
+        completed: false,
+        tenantId: tenantB.id,
+        projectId: projectB1.id,
+        assigneeId: assignee5.id,
+        createdById: eve.id,
+        priority: 'LOW'
       }
-    })
-  }
+    ]
+  })
 
-  console.log('Created 10 sample todos')
+  console.log('✅ Todos created')
 
-  console.log('Seed completed successfully!')
-  console.log('\n=== Test Users ===')
-  console.log('Global Admin: admin@example.com')
-  console.log('\nTenantA Users:')
-  console.log('  - alice@example.com (OWNER)')
-  console.log('  - bob@example.com (ADMIN)')
-  console.log('  - charlie@example.com (MEMBER)')
-  console.log('\nTenantB Users:')
-  console.log('  - dave@example.com (OWNER)')
-  console.log('  - eve@example.com (ADMIN)')
-  console.log('  - frank@example.com (MEMBER)')
+  console.log('🎉 Seeding completed!')
+  console.log('\n📊 Summary:')
+  console.log(`  - ${3} Plans`)
+  console.log(`  - ${7} Users`)
+  console.log(`  - ${2} Tenants`)
+  console.log(`  - ${3} Projects`)
+  console.log(`  - ${5} Assignees`)
+  console.log(`  - ${10} Todos`)
+  console.log('\n👥 Test Users:')
+  console.log('  - admin@example.com (Global Admin)')
+  console.log('  - alice@example.com (Tenant A Owner)')
+  console.log('  - bob@example.com (Tenant A Admin)')
+  console.log('  - david@example.com (Tenant A Member)')
+  console.log('  - charlie@example.com (Tenant B Owner)')
+  console.log('  - eve@example.com (Tenant B Admin)')
+  console.log('  - frank@example.com (Tenant B Member)')
 }
 
 main()
   .catch((e) => {
-    console.error('Error during seed:', e)
+    console.error('❌ Error during seeding:', e)
     process.exit(1)
   })
   .finally(async () => {

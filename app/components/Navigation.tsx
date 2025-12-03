@@ -1,16 +1,45 @@
 import Link from 'next/link'
 import { CheckSquare, User } from 'lucide-react'
 import { getCurrentDevUserId, getDevUser } from '@/lib/dev-auth'
+import { getCurrentTenantId, getUserTenants } from '@/lib/auth/tenant-context'
 import LogoutButton from '@/components/LogoutButton'
+import TenantSwitcher from '@/components/TenantSwitcher'
 
 export default async function Navigation() {
   const userId = await getCurrentDevUserId()
+
+  // ユーザーIDがない場合は早期リターン
+  if (!userId) {
+    return null
+  }
+
   const user = await getDevUser(userId)
 
+  // ユーザーが見つからない場合も早期リターン
+  if (!user) {
+    return null
+  }
+
   const links = [
-    { href: '/', label: 'Todo一覧' },
+    { href: '/projects', label: 'プロジェクト' },
     { href: '/assignees', label: '担当者一覧' },
   ]
+
+  // Tenantリストと現在のTenantIDを取得
+  let tenants: any[] = []
+  let currentTenantId: string | null = null
+
+  try {
+    tenants = await getUserTenants()
+    currentTenantId = await getCurrentTenantId()
+
+    // currentTenantIdがない場合は最初のTenantを使用
+    if (!currentTenantId && tenants.length > 0) {
+      currentTenantId = tenants[0].id
+    }
+  } catch (error) {
+    console.error('Error loading tenants:', error)
+  }
 
   return (
     <nav className="border-b bg-card">
@@ -36,18 +65,18 @@ export default async function Navigation() {
 
           {user && (
             <div className="flex items-center gap-4">
+              {/* Tenant Switcher */}
+              {tenants.length > 0 && currentTenantId && (
+                <TenantSwitcher tenants={tenants} currentTenantId={currentTenantId} />
+              )}
+
+              {/* User Info */}
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <div className="flex flex-col">
                   <span className="font-medium">{user.name}</span>
-                  {user.isGlobalAdmin ? (
+                  {user.isGlobalAdmin && (
                     <span className="text-xs text-muted-foreground">👑 グローバル管理者</span>
-                  ) : (
-                    user.tenantMemberships.length > 0 && (
-                      <span className="text-xs text-muted-foreground">
-                        {user.tenantMemberships[0].tenant.name} ({user.tenantMemberships[0].role})
-                      </span>
-                    )
                   )}
                 </div>
               </div>
