@@ -11,10 +11,10 @@ import { useRouter } from 'next/navigation'
 interface Plan {
   id: string
   name: string
-  price: number
-  maxProjects: number
-  maxUsers: number
-  maxTodos: number
+  price: number | null
+  maxProjects: number | null
+  maxUsers: number | null
+  maxTodos: number | null
 }
 
 interface Tenant {
@@ -82,8 +82,8 @@ export default function PlanChangeDialog({ tenant, isOpen, onClose }: PlanChange
 
   if (!isOpen) return null
 
-  const formatLimit = (limit: number) => {
-    if (limit === -1) return '無制限'
+  const formatLimit = (limit: number | null | undefined) => {
+    if (limit === null || limit === undefined || limit === -1) return '無制限'
     return limit.toString()
   }
 
@@ -125,7 +125,7 @@ export default function PlanChangeDialog({ tenant, isOpen, onClose }: PlanChange
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-lg font-semibold">{plan.name}</h3>
                         <span className="text-xl font-bold">
-                          ¥{plan.price.toLocaleString()}
+                          ¥{(plan.price ?? 0).toLocaleString()}
                           <span className="text-sm font-normal text-gray-500">/月</span>
                         </span>
                       </div>
