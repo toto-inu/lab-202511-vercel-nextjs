@@ -12,15 +12,18 @@ import { checkResourceLimit, getLimitErrorMessage } from '@/lib/plan-utils'
 export async function switchTenant(tenantId: string) {
   const user = await requireAuth()
 
-  // アクセス権チェック
-  const membership = await prisma.tenantMember.findUnique({
-    where: {
-      userId_tenantId: { userId: user.id, tenantId }
-    }
-  })
+  // グローバル管理者は全テナントにアクセス可能
+  if (!user.isGlobalAdmin) {
+    // アクセス権チェック
+    const membership = await prisma.tenantMember.findUnique({
+      where: {
+        userId_tenantId: { userId: user.id, tenantId }
+      }
+    })
 
-  if (!membership) {
-    throw new Error('このTenantにアクセスする権限がありません')
+    if (!membership) {
+      throw new Error('このTenantにアクセスする権限がありません')
+    }
   }
 
   // Cookieに保存
@@ -45,15 +48,18 @@ export async function getCurrentUserTenants() {
 export async function getTenant(tenantId: string) {
   const user = await requireAuth()
 
-  // アクセス権チェック
-  const membership = await prisma.tenantMember.findUnique({
-    where: {
-      userId_tenantId: { userId: user.id, tenantId }
-    }
-  })
+  // グローバル管理者は全テナントにアクセス可能
+  if (!user.isGlobalAdmin) {
+    // アクセス権チェック
+    const membership = await prisma.tenantMember.findUnique({
+      where: {
+        userId_tenantId: { userId: user.id, tenantId }
+      }
+    })
 
-  if (!membership) {
-    throw new Error('このTenantにアクセスする権限がありません')
+    if (!membership) {
+      throw new Error('このTenantにアクセスする権限がありません')
+    }
   }
 
   const tenant = await prisma.tenant.findUnique({
@@ -78,15 +84,18 @@ export async function getTenant(tenantId: string) {
 export async function getTenantMembers(tenantId: string) {
   const user = await requireAuth()
 
-  // アクセス権チェック
-  const membership = await prisma.tenantMember.findUnique({
-    where: {
-      userId_tenantId: { userId: user.id, tenantId }
-    }
-  })
+  // グローバル管理者は全テナントにアクセス可能
+  if (!user.isGlobalAdmin) {
+    // アクセス権チェック
+    const membership = await prisma.tenantMember.findUnique({
+      where: {
+        userId_tenantId: { userId: user.id, tenantId }
+      }
+    })
 
-  if (!membership) {
-    throw new Error('このTenantにアクセスする権限がありません')
+    if (!membership) {
+      throw new Error('このTenantにアクセスする権限がありません')
+    }
   }
 
   return await prisma.tenantMember.findMany({
