@@ -1,6 +1,10 @@
 {
   "permissions": {
     "allow": [
+      "Bash(rm:*)",
+      "Bash(rm -rf:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
       "Bash(cat:*)",
       "Bash(tree:*)",
       "WebSearch",
@@ -8,7 +12,34 @@
       "Bash(docker compose:*)",
       "Bash(bun run dev)",
       "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_take_screenshot"
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__*",
+      "mcp__playwright__**",
+      "Bash(bun install)",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_fill_form",
+      "Bash(bun add:*)",
+      "Bash(bunx prisma migrate:*)",
+      "Bash(openssl rand:*)",
+      "mcp__playwright__browser_snapshot",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"実行して\" bunx prisma migrate reset:*)",
+      "Bash(bun run:*)",
+      "Bash(docker exec:*)",
+      "mcp__playwright__browser_wait_for",
+      "Bash(bun pm:*)",
+      "mcp__playwright__browser_close",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(node:*)",
+      "Bash(tsx:*)",
+      "Bash(npx tsx:*)",
+      "Bash(bun install:*)",
+      "Bash(bun remove:*)",
+      "Bash(bun:*)",
+      "Bash(git restore:*)",
+      "Bash(git rm:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(lsof:*)"
     ],
     "deny": [
       "Read(**.env)",
@@ -30,10 +61,7 @@
       "Bash(echo test)"
     ],
     "ask": [
-      "Bash(rm:*)",
-      "Bash(rm -rf:*)",
       "Bash(git push:*)",
-      "Bash(git commit:*)",
       "Bash(git reset:*)",
       "Bash(git rebase:*)"
     ]

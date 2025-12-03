@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Assignee": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "todos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Todo"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "email",
+        "updatedAt"
+      ]
+    },
+    "Todo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed": {
+          "type": "boolean",
+          "default": false
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "assignee": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Assignee"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdBy": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/User"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "title",
+        "updatedAt"
+      ]
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "clerkId": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "default": "USER",
+          "enum": [
+            "USER",
+            "ADMIN"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Todo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Todo"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "clerkId",
+        "email",
+        "updatedAt"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "assignee": {
+      "$ref": "#/definitions/Assignee"
+    },
+    "todo": {
+      "$ref": "#/definitions/Todo"
+    },
+    "user": {
+      "$ref": "#/definitions/User"
+    }
+  }
+}
