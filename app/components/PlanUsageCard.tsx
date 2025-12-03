@@ -11,31 +11,41 @@ interface PlanUsageCardProps {
 }
 
 export default async function PlanUsageCard({ tenantId, projectId }: PlanUsageCardProps) {
-  const usage = await getResourceUsage(tenantId, projectId)
+  let usage
+  try {
+    usage = await getResourceUsage(tenantId, projectId)
+  } catch (error) {
+    return (
+      <div className="bg-white rounded-lg border p-6">
+        <h3 className="text-lg font-semibold mb-4">プラン使用状況</h3>
+        <p className="text-sm text-red-600">使用状況の読み込みに失敗しました。</p>
+      </div>
+    )
+  }
 
   const resourceItems = [
     {
       label: 'プロジェクト数',
-      current: usage.projects.current,
-      limit: usage.projects.limit,
-      percentage: usage.projects.percentage,
+      current: usage?.projects?.current ?? 0,
+      limit: usage?.projects?.limit ?? null,
+      percentage: usage?.projects?.percentage ?? 0,
       icon: '📁'
     },
     {
       label: 'ユーザー数',
-      current: usage.users.current,
-      limit: usage.users.limit,
-      percentage: usage.users.percentage,
+      current: usage?.users?.current ?? 0,
+      limit: usage?.users?.limit ?? null,
+      percentage: usage?.users?.percentage ?? 0,
       icon: '👥'
     }
   ]
 
-  if (usage.todos && projectId) {
+  if (usage?.todos && projectId) {
     resourceItems.push({
       label: 'Todo数（このプロジェクト）',
-      current: usage.todos.current,
-      limit: usage.todos.limit,
-      percentage: usage.todos.percentage,
+      current: usage.todos.current ?? 0,
+      limit: usage.todos.limit ?? null,
+      percentage: usage.todos.percentage ?? 0,
       icon: '✓'
     })
   }
@@ -47,7 +57,8 @@ export default async function PlanUsageCard({ tenantId, projectId }: PlanUsageCa
       <div className="space-y-4">
         {resourceItems.map((item) => {
           const isUnlimited = item.limit === null || item.limit === -1
-          const isNearLimit = item.percentage >= 80
+          const NEAR_LIMIT_THRESHOLD = 80
+          const isNearLimit = !isUnlimited && item.percentage >= NEAR_LIMIT_THRESHOLD && item.percentage < 100
           const isAtLimit = !isUnlimited && item.current >= item.limit
 
           let statusIcon = <CheckCircle className="h-5 w-5 text-green-500" />
@@ -98,7 +109,7 @@ export default async function PlanUsageCard({ tenantId, projectId }: PlanUsageCa
                         ? 'bg-yellow-500'
                         : 'bg-blue-500'
                     }`}
-                    style={{ width: `${Math.min(item.percentage, 100)}%` }}
+                    style={{ width: `${Math.max(0, Math.min(item.percentage ?? 0, 100))}%` }}
                   />
                 </div>
               )}

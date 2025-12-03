@@ -10,9 +10,9 @@ interface PlanLimitBadgeProps {
 
 export default function PlanLimitBadge({ current, max, type }: PlanLimitBadgeProps) {
   const isUnlimited = max === null || max === -1
-  const percentage = isUnlimited || max === 0 ? 0 : (current / max) * 100
-  const isNearLimit = percentage >= 80
-  const isAtLimit = !isUnlimited && max !== 0 && current >= max
+  const percentage = isUnlimited ? 0 : max === 0 ? (current > 0 ? 100 : 0) : (current / max) * 100
+  const isNearLimit = percentage >= 80 && percentage < 100
+  const isAtLimit = !isUnlimited && (max === 0 ? current > 0 : current >= max)
 
   const labels = {
     projects: 'プロジェクト',
