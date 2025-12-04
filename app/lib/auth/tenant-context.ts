@@ -56,7 +56,13 @@ export async function getCurrentTenant() {
       })
 
       if (tenant) {
-        return tenant
+        return {
+          ...tenant,
+          plan: {
+            ...tenant.plan,
+            price: tenant.plan.price ? Number(tenant.plan.price) : null
+          }
+        }
       }
     }
 
@@ -67,7 +73,13 @@ export async function getCurrentTenant() {
     })
 
     if (firstTenant) {
-      return firstTenant
+      return {
+        ...firstTenant,
+        plan: {
+          ...firstTenant.plan,
+          price: firstTenant.plan.price ? Number(firstTenant.plan.price) : null
+        }
+      }
     }
 
     throw new Error('No tenants exist in the system')
@@ -88,7 +100,13 @@ export async function getCurrentTenant() {
     }
 
     // Server Componentから呼ばれている場合はCookie設定できないので、ただ返すだけ
-    return membership.tenant
+    return {
+      ...membership.tenant,
+      plan: {
+        ...membership.tenant.plan,
+        price: membership.tenant.plan.price ? Number(membership.tenant.plan.price) : null
+      }
+    }
   }
 
   // 指定されたTenantへのアクセス権をチェック
@@ -103,7 +121,13 @@ export async function getCurrentTenant() {
     throw new Error('Access denied to tenant')
   }
 
-  return membership.tenant
+  return {
+    ...membership.tenant,
+    plan: {
+      ...membership.tenant.plan,
+      price: membership.tenant.plan.price ? Number(membership.tenant.plan.price) : null
+    }
+  }
 }
 
 /**
@@ -130,6 +154,10 @@ export async function getUserTenants() {
 
     return allTenants.map(tenant => ({
       ...tenant,
+      plan: {
+        ...tenant.plan,
+        price: tenant.plan.price ? Number(tenant.plan.price) : null
+      },
       role: 'OWNER' as const // グローバル管理者は全権限を持つ
     }))
   }
@@ -146,6 +174,10 @@ export async function getUserTenants() {
 
   return memberships.map(m => ({
     ...m.tenant,
+    plan: {
+      ...m.tenant.plan,
+      price: m.tenant.plan.price ? Number(m.tenant.plan.price) : null
+    },
     role: m.role
   }))
 }
