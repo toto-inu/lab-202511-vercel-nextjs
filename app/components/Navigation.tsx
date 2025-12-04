@@ -23,6 +23,7 @@ export default async function Navigation() {
   const links = [
     { href: '/projects', label: 'プロジェクト' },
     { href: '/assignees', label: '担当者一覧' },
+    { href: '/settings/members', label: 'メンバー' },
     { href: '/settings/plan', label: 'プラン' },
   ]
 

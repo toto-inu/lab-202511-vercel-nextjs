@@ -33,6 +33,7 @@ export default function TodoTable({ todos, assignees, projectId }: Props) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedTodo, setSelectedTodo] = useState<TodoWithAssignee | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const handleToggle = async (todo: TodoWithAssignee) => {
     await toggleTodo(todo.id, !todo.completed)
@@ -56,8 +57,13 @@ export default function TodoTable({ todos, assignees, projectId }: Props) {
   }
 
   const handleCreateSubmit = async (formData: FormData) => {
-    await createTodo(projectId, formData)
-    setIsCreateModalOpen(false)
+    setError(null)
+    try {
+      await createTodo(projectId, formData)
+      setIsCreateModalOpen(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Todoの作成に失敗しました')
+    }
   }
 
   const handleEditSubmit = async (formData: FormData) => {
@@ -84,6 +90,8 @@ export default function TodoTable({ todos, assignees, projectId }: Props) {
               <TableHead className="w-12"></TableHead>
               <TableHead>タイトル</TableHead>
               <TableHead>説明</TableHead>
+              <TableHead>優先度</TableHead>
+              <TableHead>期限</TableHead>
               <TableHead>担当者</TableHead>
               <TableHead>作成日</TableHead>
               <TableHead className="text-right w-32">操作</TableHead>
@@ -92,7 +100,7 @@ export default function TodoTable({ todos, assignees, projectId }: Props) {
           <TableBody>
             {todos.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                   Todoがまだありません
                 </TableCell>
               </TableRow>
@@ -115,6 +123,34 @@ export default function TodoTable({ todos, assignees, projectId }: Props) {
                   <TableCell>
                     <span className="text-sm text-muted-foreground">
                       {todo.description || '-'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        todo.priority === 'URGENT'
+                          ? 'destructive'
+                          : todo.priority === 'HIGH'
+                          ? 'default'
+                          : todo.priority === 'LOW'
+                          ? 'outline'
+                          : 'secondary'
+                      }
+                    >
+                      {todo.priority === 'URGENT'
+                        ? '緊急'
+                        : todo.priority === 'HIGH'
+                        ? '高'
+                        : todo.priority === 'LOW'
+                        ? '低'
+                        : '中'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {todo.dueDate
+                        ? new Date(todo.dueDate).toLocaleDateString('ja-JP')
+                        : '-'}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -158,10 +194,18 @@ export default function TodoTable({ todos, assignees, projectId }: Props) {
       {/* 作成モーダル */}
       <Modal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false)
+          setError(null)
+        }}
         title="新しいTodoを追加"
       >
         <form action={handleCreateSubmit} className="space-y-4">
+          {error && (
+            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+              {error}
+            </div>
+          )}
           <div>
             <label htmlFor="title" className="block text-sm font-medium mb-2">
               タイトル
@@ -185,6 +229,34 @@ export default function TodoTable({ todos, assignees, projectId }: Props) {
               placeholder="野菜と果物を買う"
               className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="priority" className="block text-sm font-medium mb-2">
+                優先度
+              </label>
+              <select
+                id="priority"
+                name="priority"
+                defaultValue="MEDIUM"
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              >
+                <option value="LOW">低</option>
+                <option value="MEDIUM">中</option>
+                <option value="HIGH">高</option>
+                <option value="URGENT">緊急</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="dueDate" className="block text-sm font-medium mb-2">
+                期限
+              </label>
+              <Input
+                type="date"
+                id="dueDate"
+                name="dueDate"
+              />
+            </div>
           </div>
           <div>
             <label htmlFor="assigneeId" className="block text-sm font-medium mb-2">
@@ -252,6 +324,39 @@ export default function TodoTable({ todos, assignees, projectId }: Props) {
                 rows={3}
                 className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="edit-priority" className="block text-sm font-medium mb-2">
+                  優先度
+                </label>
+                <select
+                  id="edit-priority"
+                  name="priority"
+                  defaultValue={selectedTodo.priority}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                >
+                  <option value="LOW">低</option>
+                  <option value="MEDIUM">中</option>
+                  <option value="HIGH">高</option>
+                  <option value="URGENT">緊急</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="edit-dueDate" className="block text-sm font-medium mb-2">
+                  期限
+                </label>
+                <Input
+                  type="date"
+                  id="edit-dueDate"
+                  name="dueDate"
+                  defaultValue={
+                    selectedTodo.dueDate
+                      ? new Date(selectedTodo.dueDate).toISOString().split('T')[0]
+                      : ''
+                  }
+                />
+              </div>
             </div>
             <div>
               <label htmlFor="edit-assigneeId" className="block text-sm font-medium mb-2">

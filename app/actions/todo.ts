@@ -69,6 +69,7 @@ export async function createTodo(projectId: string, formData: FormData) {
   const description = formData.get('description') as string | null
   const assigneeId = formData.get('assigneeId') as string | null
   const priorityStr = formData.get('priority') as string | null
+  const dueDateStr = formData.get('dueDate') as string | null
 
   if (!title) {
     throw new Error('タイトルは必須です')
@@ -91,10 +92,12 @@ export async function createTodo(projectId: string, formData: FormData) {
     )
   }
 
-  const validPriorities: TodoPriority[] = ['LOW', 'MEDIUM', 'HIGH']
+  const validPriorities: TodoPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
   const priority: TodoPriority = priorityStr && validPriorities.includes(priorityStr as TodoPriority)
     ? (priorityStr as TodoPriority)
     : 'MEDIUM'
+
+  const dueDate = dueDateStr ? new Date(dueDateStr) : null
 
   await prisma.todo.create({
     data: {
@@ -102,6 +105,7 @@ export async function createTodo(projectId: string, formData: FormData) {
       description: description || null,
       assigneeId: assigneeId || null,
       priority,
+      dueDate,
       tenantId: project.tenantId,
       projectId,
       createdById: user.id
@@ -120,6 +124,7 @@ export async function updateTodo(id: string, formData: FormData) {
   const completed = formData.get('completed') === 'true'
   const assigneeId = formData.get('assigneeId') as string | null
   const priorityStr = formData.get('priority') as string | null
+  const dueDateStr = formData.get('dueDate') as string | null
 
   if (!title) {
     throw new Error('タイトルは必須です')
@@ -142,10 +147,12 @@ export async function updateTodo(id: string, formData: FormData) {
     throw new Error('Todo not found')
   }
 
-  const validPriorities: TodoPriority[] = ['LOW', 'MEDIUM', 'HIGH']
+  const validPriorities: TodoPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
   const priority: TodoPriority | undefined = priorityStr && validPriorities.includes(priorityStr as TodoPriority)
     ? (priorityStr as TodoPriority)
     : undefined
+
+  const dueDate = dueDateStr ? new Date(dueDateStr) : null
 
   await prisma.todo.update({
     where: { id },
@@ -154,6 +161,7 @@ export async function updateTodo(id: string, formData: FormData) {
       description: description || null,
       completed,
       assigneeId: assigneeId || null,
+      dueDate,
       ...(priority && { priority })
     }
   })
