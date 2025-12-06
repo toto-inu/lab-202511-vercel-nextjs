@@ -97,6 +97,19 @@ export default function SignInPage() {
             {loading ? 'ログイン中...' : 'ログイン'}
           </Button>
         </form>
+
+        <div className="mt-6 border-t pt-4">
+          <p className="text-xs text-gray-500 font-semibold mb-2">テストアカウント（全て password: password123）</p>
+          <div className="space-y-1 text-xs text-gray-600">
+            <p>• admin@example.com - グローバル管理者</p>
+            <p>• alice@example.com - Tenant A Owner</p>
+            <p>• bob@example.com - Tenant A Admin</p>
+            <p>• david@example.com - Tenant A Member</p>
+            <p>• charlie@example.com - Tenant B Owner</p>
+            <p>• eve@example.com - Tenant B Admin</p>
+            <p>• frank@example.com - Tenant B Member</p>
+          </div>
+        </div>
       </div>
     </div>
   )

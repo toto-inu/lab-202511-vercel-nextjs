@@ -20,6 +20,34 @@ interface LimitCheckResult {
 type ResourceType = 'projects' | 'users' | 'todos'
 
 /**
+ * TRIALプランの有効期限チェック
+ */
+export async function checkTrialExpiration(tenantId: string): Promise<{
+  expired: boolean
+  daysLeft: number
+}> {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    include: { plan: true }
+  })
+
+  if (!tenant || tenant.plan.name !== 'TRIAL') {
+    return { expired: false, daysLeft: -1 }
+  }
+
+  const trialPeriodDays = tenant.plan.trialPeriodDays || 30
+  const createdAt = new Date(tenant.createdAt)
+  const now = new Date()
+  const daysPassed = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
+  const daysLeft = trialPeriodDays - daysPassed
+
+  return {
+    expired: daysLeft <= 0,
+    daysLeft: Math.max(0, daysLeft)
+  }
+}
+
+/**
  * リソース制限チェック
  */
 export async function checkResourceLimit(
@@ -36,6 +64,14 @@ export async function checkResourceLimit(
     throw new Error('Tenant not found')
   }
 
+  // TRIALプランの期限チェック
+  if (tenant.plan.name === 'TRIAL') {
+    const trialCheck = await checkTrialExpiration(tenantId)
+    if (trialCheck.expired) {
+      throw new Error('TRIALプランの有効期限が切れています。プランをアップグレードしてください。')
+    }
+  }
+
   const plan = tenant.plan
   let limit: number | null = null
   let current = 0
@@ -44,7 +80,7 @@ export async function checkResourceLimit(
     case 'projects':
       limit = plan.maxProjects
       current = await prisma.project.count({
-        where: { tenantId }
+        where: { tenantId, archived: false }
       })
       break
 
@@ -153,7 +189,7 @@ export async function getResourceUsage(tenantId: string, projectId?: string) {
   }
 
   const projectCount = await prisma.project.count({
-    where: { tenantId }
+    where: { tenantId, archived: false }
   })
 
   const userCount = await prisma.tenantMember.count({

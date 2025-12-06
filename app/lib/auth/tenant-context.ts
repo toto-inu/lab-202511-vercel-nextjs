@@ -113,7 +113,24 @@ export async function getCurrentTenant() {
   })
 
   if (!membership) {
-    throw new Error('Access denied to tenant')
+    // 無効なテナントIDの場合は、最初のメンバーシップを返す
+    const firstMembership = await prisma.tenantMember.findFirst({
+      where: { userId: user.id },
+      include: { tenant: { include: { plan: true } } },
+      orderBy: { joinedAt: 'asc' }
+    })
+
+    if (!firstMembership) {
+      throw new Error('No tenant found for user')
+    }
+
+    return {
+      ...firstMembership.tenant,
+      plan: {
+        ...firstMembership.tenant.plan,
+        price: firstMembership.tenant.plan.price ? Number(firstMembership.tenant.plan.price) : null
+      }
+    }
   }
 
   return {

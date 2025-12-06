@@ -1,21 +1,14 @@
 import Link from 'next/link'
 import { CheckSquare, User } from 'lucide-react'
-import { getCurrentDevUserId, getDevUser } from '@/lib/dev-auth'
+import { getCurrentUser } from '@/lib/auth/session'
 import { getCurrentTenantId, getUserTenants } from '@/lib/auth/tenant-context'
 import LogoutButton from '@/components/LogoutButton'
 import TenantSwitcher from '@/components/TenantSwitcher'
 
 export default async function Navigation() {
-  const userId = await getCurrentDevUserId()
+  const user = await getCurrentUser()
 
-  // ユーザーIDがない場合は早期リターン
-  if (!userId) {
-    return null
-  }
-
-  const user = await getDevUser(userId)
-
-  // ユーザーが見つからない場合も早期リターン
+  // ユーザーが見つからない場合は早期リターン
   if (!user) {
     return null
   }

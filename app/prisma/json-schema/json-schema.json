@@ -237,6 +237,9 @@
           "type": "string",
           "format": "date-time"
         },
+        "token": {
+          "type": "string"
+        },
         "ipAddress": {
           "type": [
             "string",
@@ -264,6 +267,7 @@
       "required": [
         "id",
         "expiresAt",
+        "token",
         "userId",
         "updatedAt"
       ]

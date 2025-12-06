@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 
 const publicPaths = [
   '/sign-in'
 ]
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Public routesはスキップ
@@ -24,8 +26,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // セッションチェック（Better Auth Cookie）
-  const session = request.cookies.get('better-auth.session_token')
+  // Better Auth セッションチェック
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
 
   if (!session) {
     return NextResponse.redirect(new URL('/sign-in', request.url))

@@ -106,6 +106,7 @@ model User {
 model Session {
   id        String   @id
   expiresAt DateTime
+  token     String   @unique
   ipAddress String?
   userAgent String?
   userId    String

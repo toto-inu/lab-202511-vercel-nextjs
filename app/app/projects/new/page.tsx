@@ -1,6 +1,5 @@
-import { getCurrentTenant } from '@/lib/auth/tenant-context'
-import { getCurrentDevUserId, getDevUser } from '@/lib/dev-auth'
-import { getTenantRole } from '@/lib/auth/tenant-context'
+import { getCurrentTenant, getTenantRole } from '@/lib/auth/tenant-context'
+import { getCurrentUser } from '@/lib/auth/session'
 import ProjectForm from '@/components/ProjectForm'
 import { redirect } from 'next/navigation'
 
@@ -10,12 +9,7 @@ export const revalidate = 0
 
 export default async function NewProjectPage() {
   try {
-    const userId = await getCurrentDevUserId()
-    if (!userId) {
-      redirect('/sign-in')
-    }
-
-    const user = await getDevUser(userId)
+    const user = await getCurrentUser()
     if (!user) {
       redirect('/sign-in')
     }

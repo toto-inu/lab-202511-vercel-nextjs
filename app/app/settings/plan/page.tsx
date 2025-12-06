@@ -1,33 +1,17 @@
 import { getCurrentTenant } from '@/lib/auth/tenant-context'
-import { getCurrentDevUserId, getDevUser } from '@/lib/dev-auth'
+import { getCurrentUser } from '@/lib/auth/session'
 import PlanInfoCard from '@/components/PlanInfoCard'
 import PlanUsageCard from '@/components/PlanUsageCard'
+import { redirect } from 'next/navigation'
 
 // 動的レンダリングを強制してキャッシュを無効化
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function PlanPage() {
-  const userId = await getCurrentDevUserId()
-  if (!userId) {
-    return (
-      <div className="container mx-auto py-10 px-4 max-w-6xl">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">ログインが必要です</h1>
-        </div>
-      </div>
-    )
-  }
-
-  const user = await getDevUser(userId)
+  const user = await getCurrentUser()
   if (!user) {
-    return (
-      <div className="container mx-auto py-10 px-4 max-w-6xl">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">ユーザーが見つかりません</h1>
-        </div>
-      </div>
-    )
+    redirect('/sign-in')
   }
 
   const tenant = await getCurrentTenant()
