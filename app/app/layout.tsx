@@ -28,8 +28,8 @@ export default async function RootLayout({
   const pathname = headersList.get("x-pathname") || "";
 
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
-  const isDevLoginPath = pathname === "/dev-login";
-  const showNavigation = !isAdminPath && !isDevLoginPath;
+  const isSignInPath = pathname === "/sign-in";
+  const showNavigation = !isAdminPath && !isSignInPath;
 
   return (
     <html lang="ja">

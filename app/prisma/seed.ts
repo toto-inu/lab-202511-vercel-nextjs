@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -12,8 +13,13 @@ async function main() {
   await prisma.project.deleteMany()
   await prisma.tenantMember.deleteMany()
   await prisma.tenant.deleteMany()
+  await prisma.account.deleteMany()
+  await prisma.session.deleteMany()
   await prisma.user.deleteMany()
   await prisma.plan.deleteMany()
+
+  // パスワードハッシュ (password123)
+  const hashedPassword = await bcrypt.hash('password123', 10)
 
   // Create Plans
   const freePlan = await prisma.plan.create({
@@ -23,6 +29,17 @@ async function main() {
       maxProjects: 1,
       maxUsersPerTenant: 3,
       maxTodosPerProject: 10,
+      features: JSON.stringify([])
+    }
+  })
+
+  const trialPlan = await prisma.plan.create({
+    data: {
+      name: 'TRIAL',
+      displayName: 'Trial',
+      maxProjects: 3,
+      maxUsersPerTenant: 5,
+      maxTodosPerProject: 50,
       features: JSON.stringify([])
     }
   })
@@ -51,62 +68,39 @@ async function main() {
 
   console.log('✅ Plans created')
 
+  // Helper function to create user with Better Auth account
+  async function createUserWithAuth(email: string, name: string, isGlobalAdmin: boolean) {
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name,
+        isGlobalAdmin,
+        emailVerified: false
+      }
+    })
+
+    await prisma.account.create({
+      data: {
+        id: `${user.id}-credential`,
+        accountId: `${user.id}-credential`,
+        providerId: 'credential',
+        userId: user.id,
+        password: hashedPassword
+      }
+    })
+
+    return user
+  }
+
   // Create Users
-  const alice = await prisma.user.create({
-    data: {
-      email: 'alice@example.com',
-      name: 'Alice (Tenant A Owner)',
-      isGlobalAdmin: false
-    }
-  })
+  const alice = await createUserWithAuth('alice@example.com', 'Alice (Tenant A Owner)', false)
 
-  const bob = await prisma.user.create({
-    data: {
-      email: 'bob@example.com',
-      name: 'Bob (Tenant A Admin)',
-      isGlobalAdmin: false
-    }
-  })
-
-  const charlie = await prisma.user.create({
-    data: {
-      email: 'charlie@example.com',
-      name: 'Charlie (Tenant B Owner)',
-      isGlobalAdmin: false
-    }
-  })
-
-  const david = await prisma.user.create({
-    data: {
-      email: 'david@example.com',
-      name: 'David (Tenant A Member)',
-      isGlobalAdmin: false
-    }
-  })
-
-  const eve = await prisma.user.create({
-    data: {
-      email: 'eve@example.com',
-      name: 'Eve (Tenant B Admin)',
-      isGlobalAdmin: false
-    }
-  })
-
-  const frank = await prisma.user.create({
-    data: {
-      email: 'frank@example.com',
-      name: 'Frank (Tenant B Member)',
-      isGlobalAdmin: false
-    }
-  })
-
-  const admin = await prisma.user.create({
-    data: {
-      email: 'admin@example.com',
-      name: 'Global Admin',
-      isGlobalAdmin: true
-    }
-  })
+  const bob = await createUserWithAuth('bob@example.com', 'Bob (Tenant A Admin)', false)
+  const charlie = await createUserWithAuth('charlie@example.com', 'Charlie (Tenant B Owner)', false)
+  const david = await createUserWithAuth('david@example.com', 'David (Tenant A Member)', false)
+  const eve = await createUserWithAuth('eve@example.com', 'Eve (Tenant B Admin)', false)
+  const frank = await createUserWithAuth('frank@example.com', 'Frank (Tenant B Member)', false)
+  const admin = await createUserWithAuth('admin@example.com', 'Global Admin', true)
 
   console.log('✅ Users created')
 
@@ -351,13 +345,13 @@ async function main() {
 
   console.log('🎉 Seeding completed!')
   console.log('\n📊 Summary:')
-  console.log(`  - ${3} Plans`)
-  console.log(`  - ${7} Users`)
+  console.log(`  - ${4} Plans (FREE, TRIAL, PRO, ENTERPRISE)`)
+  console.log(`  - ${7} Users (with Better Auth accounts)`)
   console.log(`  - ${2} Tenants`)
   console.log(`  - ${3} Projects`)
   console.log(`  - ${5} Assignees`)
   console.log(`  - ${10} Todos`)
-  console.log('\n👥 Test Users:')
+  console.log('\n👥 Test Users (all with password: password123):')
   console.log('  - admin@example.com (Global Admin)')
   console.log('  - alice@example.com (Tenant A Owner)')
   console.log('  - bob@example.com (Tenant A Admin)')

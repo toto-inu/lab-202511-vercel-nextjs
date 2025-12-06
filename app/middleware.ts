@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 const publicPaths = [
-  '/dev-login'
+  '/sign-in'
 ]
 
 export async function middleware(request: NextRequest) {
@@ -24,11 +24,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // セッションチェック（Cookie）
-  const devUserId = request.cookies.get('dev-user-id')
+  // セッションチェック（Better Auth Cookie）
+  const session = request.cookies.get('better-auth.session_token')
 
-  if (!devUserId) {
-    return NextResponse.redirect(new URL('/dev-login', request.url))
+  if (!session) {
+    return NextResponse.redirect(new URL('/sign-in', request.url))
   }
 
   // パス名をヘッダーに追加

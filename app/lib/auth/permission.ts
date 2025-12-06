@@ -1,24 +1,20 @@
 /**
  * 権限チェックヘルパー
- * 開発用認証（dev-auth）ベース
+ * Better Auth ベース
  */
 
 import { TenantRole, ProjectRole } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { getCurrentDevUserId, getDevUser } from '@/lib/dev-auth'
+import { getCurrentUser } from '@/lib/auth/session'
 
 /**
  * 認証チェック（ログイン必須）
  */
 export async function requireAuth() {
-  const userId = await getCurrentDevUserId()
-  if (!userId) {
-    throw new Error('Not authenticated')
-  }
+  const user = await getCurrentUser()
 
-  const user = await getDevUser(userId)
   if (!user) {
-    throw new Error('User not found')
+    throw new Error('Not authenticated')
   }
 
   return user

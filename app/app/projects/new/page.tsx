@@ -12,12 +12,12 @@ export default async function NewProjectPage() {
   try {
     const userId = await getCurrentDevUserId()
     if (!userId) {
-      redirect('/dev-login')
+      redirect('/sign-in')
     }
 
     const user = await getDevUser(userId)
     if (!user) {
-      redirect('/dev-login')
+      redirect('/sign-in')
     }
 
     const tenant = await getCurrentTenant()
@@ -58,7 +58,7 @@ export default async function NewProjectPage() {
     )
   } catch (error) {
     if (error instanceof Error && error.message.includes('ログインが必要')) {
-      redirect('/dev-login')
+      redirect('/sign-in')
     }
     throw error
   }

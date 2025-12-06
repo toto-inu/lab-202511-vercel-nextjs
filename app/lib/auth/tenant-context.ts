@@ -1,11 +1,11 @@
 /**
  * Tenantコンテキスト管理
- * 開発用認証（dev-auth）ベース
+ * Better Auth ベース
  */
 
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
-import { getCurrentDevUserId, getDevUser } from '@/lib/dev-auth'
+import { getCurrentUserId, getCurrentUser } from '@/lib/auth/session'
 
 const TENANT_COOKIE_NAME = 'current-tenant-id'
 
@@ -34,14 +34,9 @@ export async function setCurrentTenantId(tenantId: string) {
  * 現在のTenantを取得（メンバーシップチェック付き）
  */
 export async function getCurrentTenant() {
-  const userId = await getCurrentDevUserId()
-  if (!userId) {
-    throw new Error('Not authenticated')
-  }
-
-  const user = await getDevUser(userId)
+  const user = await getCurrentUser()
   if (!user) {
-    throw new Error('User not found')
+    throw new Error('Not authenticated')
   }
 
   // グローバル管理者の場合は、最初のテナントを返す（または管理画面用に全テナントアクセス可能）
@@ -135,14 +130,9 @@ export async function getCurrentTenant() {
  * グローバル管理者の場合は全テナントを返す
  */
 export async function getUserTenants() {
-  const userId = await getCurrentDevUserId()
-  if (!userId) {
-    throw new Error('Not authenticated')
-  }
-
-  const user = await getDevUser(userId)
+  const user = await getCurrentUser()
   if (!user) {
-    throw new Error('User not found')
+    throw new Error('Not authenticated')
   }
 
   // グローバル管理者は全テナントにアクセス可能

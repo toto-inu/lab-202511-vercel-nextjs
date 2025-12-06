@@ -20,6 +20,6 @@ export default async function Home() {
     redirect('/projects')
   } catch (error) {
     // 認証エラーの場合はログインページへリダイレクト
-    redirect('/dev-login')
+    redirect('/sign-in')
   }
 }

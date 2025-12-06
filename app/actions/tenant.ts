@@ -3,8 +3,10 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { setCurrentTenantId, getUserTenants } from '@/lib/auth/tenant-context'
-import { requireAuth, requireTenantRole } from '@/lib/auth/permission'
+import { requireAuth, requireTenantRole, requireGlobalAdmin } from '@/lib/auth/permission'
 import { checkResourceLimit, getLimitErrorMessage } from '@/lib/plan-utils'
+import { auth } from '@/lib/auth'
+import bcrypt from 'bcryptjs'
 
 /**
  * Tenant切り替え
@@ -116,11 +118,12 @@ export async function getTenantMembers(tenantId: string) {
 }
 
 /**
- * Tenantにメンバーを招待
+ * Tenantにメンバーを招待（ユーザーアカウントがない場合は作成）
  */
 export async function inviteTenantMember(
   tenantId: string,
   email: string,
+  name: string,
   role: 'OWNER' | 'ADMIN' | 'MEMBER'
 ) {
   // 権限チェック（OWNER/ADMINのみ招待可能）
@@ -141,12 +144,39 @@ export async function inviteTenantMember(
   }
 
   // ユーザーが存在するかチェック
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { email }
   })
 
+  // ユーザーが存在しない場合は作成
   if (!user) {
-    throw new Error('指定されたメールアドレスのユーザーが見つかりません')
+    // パスワードをハッシュ化
+    const hashedPassword = await bcrypt.hash('password123', 10)
+
+    user = await prisma.$transaction(async (tx) => {
+      // ユーザーを作成
+      const newUser = await tx.user.create({
+        data: {
+          email,
+          name,
+          emailVerified: false,
+          isGlobalAdmin: false
+        }
+      })
+
+      // Better Auth Accountを作成（パスワード保存）
+      await tx.account.create({
+        data: {
+          id: `${newUser.id}-credential`,
+          accountId: `${newUser.id}-credential`,
+          providerId: 'credential',
+          userId: newUser.id,
+          password: hashedPassword
+        }
+      })
+
+      return newUser
+    })
   }
 
   // 既にメンバーかチェック
@@ -213,4 +243,98 @@ export async function removeTenantMember(tenantId: string, userId: string) {
   })
 
   revalidatePath(`/tenants/${tenantId}/members`)
+}
+
+/**
+ * Tenantを作成（グローバル管理者のみ）
+ * オーナーユーザーアカウントも同時に作成
+ */
+export async function createTenantWithOwner(
+  tenantName: string,
+  tenantSlug: string,
+  ownerName: string,
+  ownerEmail: string,
+  planName: string = 'TRIAL'
+) {
+  // グローバル管理者チェック
+  await requireGlobalAdmin()
+
+  // slugの重複チェック
+  const existingTenant = await prisma.tenant.findUnique({
+    where: { slug: tenantSlug }
+  })
+
+  if (existingTenant) {
+    throw new Error('このslugは既に使用されています')
+  }
+
+  // プランを取得
+  const plan = await prisma.plan.findUnique({
+    where: { name: planName }
+  })
+
+  if (!plan) {
+    throw new Error(`プラン "${planName}" が見つかりません`)
+  }
+
+  // ユーザーの存在チェック
+  const existingUser = await prisma.user.findUnique({
+    where: { email: ownerEmail }
+  })
+
+  if (existingUser) {
+    throw new Error('このメールアドレスは既に使用されています')
+  }
+
+  // パスワードをハッシュ化
+  const hashedPassword = await bcrypt.hash('password123', 10)
+
+  // トランザクションでユーザー、Tenant、メンバーシップを作成
+  const result = await prisma.$transaction(async (tx) => {
+    // ユーザーを作成
+    const user = await tx.user.create({
+      data: {
+        email: ownerEmail,
+        name: ownerName,
+        emailVerified: false,
+        isGlobalAdmin: false
+      }
+    })
+
+    // Better Auth Accountを作成（パスワード保存）
+    await tx.account.create({
+      data: {
+        id: `${user.id}-credential`,
+        accountId: `${user.id}-credential`,
+        providerId: 'credential',
+        userId: user.id,
+        password: hashedPassword
+      }
+    })
+
+    // Tenantを作成
+    const tenant = await tx.tenant.create({
+      data: {
+        name: tenantName,
+        slug: tenantSlug,
+        planId: plan.id,
+        status: 'TRIAL'
+      }
+    })
+
+    // TenantメンバーシップをOWNERで作成
+    await tx.tenantMember.create({
+      data: {
+        userId: user.id,
+        tenantId: tenant.id,
+        role: 'OWNER'
+      }
+    })
+
+    return { user, tenant }
+  })
+
+  revalidatePath('/admin/tenants')
+
+  return result
 }

@@ -28,6 +28,6 @@ export default async function AssigneesPage() {
     )
   } catch (error) {
     // 認証エラーの場合はログインページへリダイレクト
-    redirect('/dev-login')
+    redirect('/sign-in')
   }
 }

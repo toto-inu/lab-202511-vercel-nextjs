@@ -69,6 +69,7 @@ export default function TenantMemberManager({
 }: TenantMemberManagerProps) {
   const router = useRouter()
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [selectedRole, setSelectedRole] = useState<'OWNER' | 'ADMIN' | 'MEMBER'>('MEMBER')
   const [isLoading, setIsLoading] = useState(false)
@@ -78,16 +79,17 @@ export default function TenantMemberManager({
   const canChangeRoles = currentUserRole === 'OWNER'
 
   const handleInvite = async () => {
-    if (!email) {
-      setError('メールアドレスを入力してください')
+    if (!name || !email) {
+      setError('名前とメールアドレスを入力してください')
       return
     }
 
     setIsLoading(true)
     setError(null)
     try {
-      await inviteTenantMember(tenantId, email, selectedRole)
+      await inviteTenantMember(tenantId, email, name, selectedRole)
       setInviteDialogOpen(false)
+      setName('')
       setEmail('')
       setSelectedRole('MEMBER')
       router.refresh()
@@ -148,7 +150,7 @@ export default function TenantMemberManager({
                 <DialogHeader>
                   <DialogTitle>メンバーを招待</DialogTitle>
                   <DialogDescription>
-                    既存のユーザーをテナントに招待します。
+                    新しいユーザーアカウントを作成してテナントに追加します。
                   </DialogDescription>
                 </DialogHeader>
                 {error && (
@@ -157,6 +159,17 @@ export default function TenantMemberManager({
                   </div>
                 )}
                 <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">名前</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="山田太郎"
+                      disabled={isLoading}
+                    />
+                  </div>
                   <div className="grid gap-2">
                     <Label htmlFor="email">メールアドレス</Label>
                     <Input
@@ -194,8 +207,8 @@ export default function TenantMemberManager({
                   >
                     キャンセル
                   </Button>
-                  <Button onClick={handleInvite} disabled={isLoading || !email}>
-                    {isLoading ? '招待中...' : '招待'}
+                  <Button onClick={handleInvite} disabled={isLoading || !name || !email}>
+                    {isLoading ? '作成中...' : '作成'}
                   </Button>
                 </DialogFooter>
               </DialogContent>

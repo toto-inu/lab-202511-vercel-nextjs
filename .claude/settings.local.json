@@ -60,7 +60,13 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/todo_db?schema=public\" bunx prisma db seed:*)",
       "mcp__playwright__browser_select_option",
       "Bash(bunx tsc:*)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/todo_db?schema=public\" bunx tsx:*)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/todo_db?schema=public\" bunx tsx:*)",
+      "mcp__playwright__browser_install",
+      "Bash(for port in 3000 3001 3002 3003)",
+      "Bash(do lsof -ti :$port)",
+      "Bash(done)",
+      "Bash(PORT=4000 bun run:*)",
+      "Bash(bunx shadcn@latest add:*)"
     ],
     "deny": [
       "Read(**.env)",
