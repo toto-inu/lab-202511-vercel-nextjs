@@ -1,4 +1,4 @@
-import { getCurrentTenant, getTenantRole } from '@/lib/auth/tenant-context'
+import { getCurrentTenant, getTenantRole } from '@/lib/auth/session'
 import { getCurrentUser } from '@/lib/auth/session'
 import ProjectForm from '@/components/ProjectForm'
 import { redirect } from 'next/navigation'

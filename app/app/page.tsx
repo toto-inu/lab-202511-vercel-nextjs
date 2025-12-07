@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { getCurrentTenant } from '@/lib/auth/tenant-context'
+import { getCurrentTenant } from '@/lib/auth/session'
 import { getProjects } from '@/actions/project'
 
 // 動的レンダリングを強制してキャッシュを無効化

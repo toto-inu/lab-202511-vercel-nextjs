@@ -37,7 +37,7 @@ interface TenantMember {
     id: string
     name: string
     email: string
-    avatarUrl: string | null
+    image: string | null
     isGlobalAdmin: boolean
   }
 }

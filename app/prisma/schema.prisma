@@ -6,7 +6,7 @@ generator client {
 }
 
 generator jsonSchema {
-  provider = "prisma-json-schema-generator"
+  provider              = "prisma-json-schema-generator"
   includeRequiredFields = "true"
 }
 
@@ -20,22 +20,22 @@ datasource db {
 // =======================
 
 model Plan {
-  id          String   @id @default(cuid())
-  name        String   @unique  // "FREE", "PRO", "ENTERPRISE"
-  displayName String            // "Free Plan", "Pro Plan", "Enterprise Plan"
+  id          String  @id @default(cuid())
+  name        String  @unique // "FREE", "PRO", "ENTERPRISE"
+  displayName String // "Free Plan", "Pro Plan", "Enterprise Plan"
   description String?
 
   // 機能制限
-  maxProjects        Int?     // nullは無制限
+  maxProjects        Int? // nullは無制限
   maxUsersPerTenant  Int?
   maxTodosPerProject Int?
 
   // 機能フラグ
-  features Json @default("{}")  // { "advancedReporting": true, "apiAccess": false, ... }
+  features Json @default("{}") // { "advancedReporting": true, "apiAccess": false, ... }
 
   // 価格情報（将来の拡張用）
   price        Decimal? @db.Decimal(10, 2)
-  billingCycle String?  // "MONTHLY", "YEARLY"
+  billingCycle String? // "MONTHLY", "YEARLY"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -44,9 +44,9 @@ model Plan {
 }
 
 model Tenant {
-  id          String       @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
-  slug        String       @unique  // URL用: acme-corp
+  slug        String  @unique // URL用: acme-corp
   description String?
 
   // プラン関連
@@ -54,11 +54,11 @@ model Tenant {
   plan   Plan   @relation(fields: [planId], references: [id])
 
   // サブスクリプション状態
-  status      TenantStatus @default(ACTIVE)  // ACTIVE, SUSPENDED, CANCELLED
+  status      TenantStatus @default(ACTIVE) // ACTIVE, SUSPENDED, CANCELLED
   trialEndsAt DateTime?
 
   // 設定
-  settings Json @default("{}")  // テナント固有設定
+  settings Json @default("{}") // テナント固有設定
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,12 +97,16 @@ model User {
   // Relations
   tenantMemberships  TenantMember[]
   projectMemberships ProjectMember[]
-  createdTodos       Todo[]         @relation("TodoCreator")
+  createdTodos       Todo[]          @relation("TodoCreator")
   sessions           Session[]
   accounts           Account[]
+  image              String?
+
+  @@map("user")
 }
 
 // Better Auth Session
+
 model Session {
   id        String   @id
   expiresAt DateTime
@@ -114,23 +118,33 @@ model Session {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
 }
 
 // Better Auth Account (for password storage)
+
 model Account {
-  id           String  @id
+  id           String    @id
   accountId    String
   providerId   String
   userId       String
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken  String?
   refreshToken String?
   idToken      String?
   expiresAt    DateTime?
   password     String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+
+  @@index([userId])
+  @@map("account")
 }
 
 model TenantMember {
@@ -147,7 +161,7 @@ model TenantMember {
   // 招待・参加関連
   invitedBy String?
   invitedAt DateTime?
-  joinedAt  DateTime @default(now())
+  joinedAt  DateTime  @default(now())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -158,8 +172,8 @@ model TenantMember {
 }
 
 enum TenantRole {
-  OWNER  // テナント所有者。全権限
-  ADMIN  // テナント管理者。ユーザー管理、プロジェクト管理
+  OWNER // テナント所有者。全権限
+  ADMIN // テナント管理者。ユーザー管理、プロジェクト管理
   MEMBER // 一般メンバー。割り当てられたプロジェクトのみアクセス
 }
 
@@ -171,7 +185,7 @@ model Project {
   id          String  @id @default(cuid())
   name        String
   description String?
-  slug        String  // テナント内で一意
+  slug        String // テナント内で一意
 
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -212,7 +226,7 @@ model ProjectMember {
 }
 
 enum ProjectRole {
-  ADMIN  // プロジェクト管理者。メンバー管理、設定変更
+  ADMIN // プロジェクト管理者。メンバー管理、設定変更
   EDITOR // 編集者。Todo作成・編集・削除
   VIEWER // 閲覧者。Todoの閲覧のみ
 }
@@ -266,4 +280,34 @@ model Assignee {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   todos     Todo[]
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// Better Auth Organization Invitation
+model Invitation {
+  id             String   @id @default(cuid())
+  organizationId String   // tenantId
+  email          String
+  role           String   // TenantRole as string
+  status         String   @default("pending") // pending, accepted, rejected, cancelled
+  expiresAt      DateTime
+  inviterId      String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitation")
 }

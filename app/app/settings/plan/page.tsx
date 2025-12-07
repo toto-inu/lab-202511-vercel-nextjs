@@ -1,4 +1,4 @@
-import { getCurrentTenant } from '@/lib/auth/tenant-context'
+import { getCurrentTenant } from '@/lib/auth/session'
 import { getCurrentUser } from '@/lib/auth/session'
 import PlanInfoCard from '@/components/PlanInfoCard'
 import PlanUsageCard from '@/components/PlanUsageCard'

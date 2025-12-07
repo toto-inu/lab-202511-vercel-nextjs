@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { setCurrentTenantId, getUserTenants } from '@/lib/auth/tenant-context'
+import { setCurrentTenantId, getUserTenants } from '@/lib/auth/session'
 import { requireAuth, requireTenantRole, requireGlobalAdmin } from '@/lib/auth/permission'
 import { checkResourceLimit, getLimitErrorMessage } from '@/lib/plan-utils'
 import { auth } from '@/lib/auth'
@@ -108,7 +108,7 @@ export async function getTenantMembers(tenantId: string) {
           id: true,
           name: true,
           email: true,
-          avatarUrl: true,
+          image: true,
           isGlobalAdmin: true
         }
       }

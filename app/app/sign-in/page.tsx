@@ -2,13 +2,16 @@
 
 import { useState } from 'react'
 import { authClient } from '@/lib/auth-client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 export default function SignInPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -31,8 +34,8 @@ export default function SignInPage() {
         return
       }
 
-      // ログイン成功
-      router.push('/')
+      // ログイン成功 - callbackUrlにリダイレクト
+      router.push(callbackUrl)
       router.refresh()
     } catch (err) {
       setError('ログインに失敗しました')

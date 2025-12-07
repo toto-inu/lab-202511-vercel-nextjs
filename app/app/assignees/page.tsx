@@ -1,5 +1,5 @@
 import { getAssignees } from '@/actions/assignee'
-import { getCurrentTenant } from '@/lib/auth/tenant-context'
+import { getCurrentTenant } from '@/lib/auth/session'
 import AssigneeTable from '@/components/AssigneeTable'
 import { redirect } from 'next/navigation'
 

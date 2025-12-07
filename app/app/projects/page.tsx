@@ -1,4 +1,4 @@
-import { getCurrentTenant } from '@/lib/auth/tenant-context'
+import { getCurrentTenant } from '@/lib/auth/session'
 import { getProjects } from '@/actions/project'
 import ProjectList from '@/components/ProjectList'
 import Link from 'next/link'

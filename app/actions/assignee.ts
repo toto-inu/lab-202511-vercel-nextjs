@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { requireAuth } from '@/lib/auth/permission'
-import { getCurrentTenant } from '@/lib/auth/tenant-context'
+import { getCurrentTenant } from '@/lib/auth/session'
 
 /**
  * 担当者一覧を取得

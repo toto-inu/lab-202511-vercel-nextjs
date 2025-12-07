@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
 
 const publicPaths = [
   '/sign-in'
@@ -28,11 +27,14 @@ export async function proxy(request: NextRequest) {
 
   // Better Auth セッションチェック
   const session = await auth.api.getSession({
-    headers: await headers()
+    headers: request.headers
   })
 
   if (!session) {
-    return NextResponse.redirect(new URL('/sign-in', request.url))
+    // 元のURLをcallbackUrlパラメータとして保存
+    const signInUrl = new URL('/sign-in', request.url)
+    signInUrl.searchParams.set('callbackUrl', pathname)
+    return NextResponse.redirect(signInUrl)
   }
 
   // パス名をヘッダーに追加

@@ -219,6 +219,12 @@
           "items": {
             "$ref": "#/definitions/Account"
           }
+        },
+        "image": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [
@@ -325,6 +331,26 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "accessTokenExpiresAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "refreshTokenExpiresAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "scope": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [
@@ -595,6 +621,83 @@
         "email",
         "updatedAt"
       ]
+    },
+    "Verification": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "identifier",
+        "value",
+        "expiresAt",
+        "updatedAt"
+      ]
+    },
+    "Invitation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "default": "pending"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "inviterId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "organizationId",
+        "email",
+        "role",
+        "expiresAt",
+        "inviterId",
+        "updatedAt"
+      ]
     }
   },
   "type": "object",
@@ -628,6 +731,12 @@
     },
     "assignee": {
       "$ref": "#/definitions/Assignee"
+    },
+    "verification": {
+      "$ref": "#/definitions/Verification"
+    },
+    "invitation": {
+      "$ref": "#/definitions/Invitation"
     }
   }
 }

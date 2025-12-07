@@ -167,7 +167,7 @@ export async function getProjectMembers(projectId: string) {
           id: true,
           name: true,
           email: true,
-          avatarUrl: true
+          image: true
         }
       }
     },

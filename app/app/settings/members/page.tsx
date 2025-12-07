@@ -1,4 +1,4 @@
-import { getCurrentTenant } from '@/lib/auth/tenant-context'
+import { getCurrentTenant } from '@/lib/auth/session'
 import { getTenantMembers } from '@/actions/tenant'
 import { requireAuth } from '@/lib/auth/permission'
 import TenantMemberManager from '@/components/TenantMemberManager'

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { CheckSquare, User } from 'lucide-react'
 import { getCurrentUser } from '@/lib/auth/session'
-import { getCurrentTenantId, getUserTenants } from '@/lib/auth/tenant-context'
+import { getCurrentTenantId, getUserTenants } from '@/lib/auth/session'
 import LogoutButton from '@/components/LogoutButton'
 import TenantSwitcher from '@/components/TenantSwitcher'
 
