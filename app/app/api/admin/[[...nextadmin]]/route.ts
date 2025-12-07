@@ -1,23 +1,22 @@
 import { prisma } from "@/lib/prisma";
 import { createHandler } from "@premieroctet/next-admin/appHandler";
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getCurrentUser } from "@/lib/auth/session";
 
 const { run } = createHandler({
   apiBasePath: "/api/admin",
   prisma,
   onRequest: async (req) => {
-    // Clerk認証チェック
-    const { userId, sessionClaims } = await auth();
+    // Better Auth認証チェック
+    const user = await getCurrentUser();
 
     // ユーザーが認証されていない場合
-    if (!userId) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // ユーザーのロールがADMINでない場合
-    const userRole = (sessionClaims?.metadata as { role?: string })?.role;
-    if (userRole !== "ADMIN") {
+    // グローバル管理者でない場合
+    if (!user.isGlobalAdmin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   },

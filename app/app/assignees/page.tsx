@@ -27,7 +27,15 @@ export default async function AssigneesPage() {
       </div>
     )
   } catch (error) {
-    // 認証エラーの場合はログインページへリダイレクト
-    redirect('/sign-in')
+    // 認証エラーの場合のみログインページへリダイレクト
+    if (error instanceof Error &&
+        (error.message.includes('テナントが見つかりません') ||
+         error.message.includes('認証が必要です'))) {
+      redirect('/sign-in')
+    }
+
+    // その他のエラーはログ出力して再スロー
+    console.error('Assignees page error:', error)
+    throw error
   }
 }

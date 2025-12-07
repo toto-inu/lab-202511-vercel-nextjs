@@ -7,7 +7,7 @@ import Navigation from "@/components/Navigation";
  * 条件付きレイアウトコンポーネント
  *
  * パスに応じて、ナビゲーションバーの表示/非表示を切り替えます。
- * 管理画面(/admin)の場合は、ナビゲーションバーを表示しません。
+ * 管理画面(/admin)および開発ログインページ(/dev-login)ではナビゲーションバーを表示しません。
  */
 export default function ConditionalLayout({
   children,
@@ -15,8 +15,10 @@ export default function ConditionalLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
-  const isDevLoginPath = pathname === "/dev-login";
+  // usePathname()はSSR時にnullを返す可能性があるため、デフォルト値を使用
+  const currentPath = pathname || '';
+  const isAdminPath = currentPath === "/admin" || currentPath.startsWith("/admin/");
+  const isDevLoginPath = currentPath === "/dev-login";
 
   if (isAdminPath || isDevLoginPath) {
     // 管理画面・ログイン画面: ナビゲーションバーなし、スタイリングなし

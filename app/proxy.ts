@@ -17,10 +17,13 @@ export async function proxy(request: NextRequest) {
   }
 
   // 静的ファイルをスキップ
+  // 拡張子を持つファイル（最後のセグメントに.が含まれる）かチェック
+  const hasFileExtension = /\.[^/]+$/.test(pathname)
+
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
-    pathname.includes('.')
+    hasFileExtension
   ) {
     return NextResponse.next()
   }

@@ -19,7 +19,15 @@ export default async function Home() {
     // プロジェクトがない場合はプロジェクト一覧へ
     redirect('/projects')
   } catch (error) {
-    // 認証エラーの場合はログインページへリダイレクト
-    redirect('/sign-in')
+    // 認証エラー（テナントが見つからない）の場合のみログインページへリダイレクト
+    if (error instanceof Error &&
+        (error.message.includes('テナントが見つかりません') ||
+         error.message.includes('認証が必要です'))) {
+      redirect('/sign-in')
+    }
+
+    // その他のエラーはログ出力して再スロー
+    console.error('Home page error:', error)
+    throw error
   }
 }
