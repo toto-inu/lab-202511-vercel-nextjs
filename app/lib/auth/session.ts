@@ -61,19 +61,24 @@ export async function getSession() {
  *
  * Note: Better Authのorganization pluginを使用。
  * セッションのactiveOrganizationIdを返します。
+ * 未設定の場合はユーザーの最初のテナントを返します。
  */
 export async function getCurrentTenantId(): Promise<string | null> {
   const session = await auth.api.getSession({
     headers: await headers()
   })
 
-  // Better Authのactive organizationを返す
-  // TODO: organization pluginが提供するactiveOrganizationIdを使用
-  // 現在は暫定的にユーザーの最初のテナントを返す
   if (!session?.user?.id) {
     return null
   }
 
+  // Better Authが管理するactiveOrganizationIdを優先
+  const activeOrgId = (session as any)?.session?.activeOrganizationId
+  if (activeOrgId) {
+    return activeOrgId
+  }
+
+  // 未設定の場合は、ユーザーの最初のテナントを返す（フォールバック）
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
@@ -90,13 +95,16 @@ export async function getCurrentTenantId(): Promise<string | null> {
 /**
  * テナント切り替え（Better Auth organization切り替え）
  *
- * Note: Better AuthのsetActiveOrganization APIを使用すべきですが、
- * 現在は暫定的に実装。将来的にはクライアント側で
- * authClient.organization.setActive()を使用します。
+ * Note: Better AuthのsetActiveOrganization APIを使用します。
  */
 export async function setCurrentTenantId(tenantId: string) {
-  // TODO: Better Authのorganization切り替えAPIを使用
-  // 現在は何もしない（クライアント側で処理）
+  await auth.api.setActiveOrganization({
+    headers: await headers(),
+    body: {
+      organizationId: tenantId
+    }
+  })
+
   return { success: true }
 }
 
@@ -104,19 +112,29 @@ export async function setCurrentTenantId(tenantId: string) {
  * ユーザーが所属する全テナントを取得
  */
 export async function getUserTenants() {
-  const user = await getCurrentUser()
+  const organizations = await auth.api.listOrganizations({
+    headers: await headers()
+  })
 
-  if (!user) {
-    return []
-  }
+  // プラン情報が必要な場合は追加で取得
+  const tenantsWithPlans = await Promise.all(
+    (organizations as any[]).map(async (org) => {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: org.id },
+        include: { plan: true }
+      })
 
-  return user.tenantMemberships.map(membership => ({
-    id: membership.tenant.id,
-    name: membership.tenant.name,
-    slug: membership.tenant.slug,
-    role: membership.role,
-    plan: membership.tenant.plan
-  }))
+      return {
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        role: org.role,
+        plan: tenant?.plan
+      }
+    })
+  )
+
+  return tenantsWithPlans
 }
 
 /**
@@ -145,13 +163,29 @@ export async function getCurrentTenant() {
 
 /**
  * ユーザーのテナントロールを取得
+ *
+ * Note: Better AuthのgetFullOrganizationを使用
  */
 export async function getTenantRole(userId: string, tenantId: string): Promise<string | null> {
-  const membership = await prisma.tenantMember.findUnique({
-    where: {
-      userId_tenantId: { userId, tenantId }
-    }
-  })
+  try {
+    const org = await auth.api.getFullOrganization({
+      headers: await headers(),
+      query: {
+        organizationId: tenantId
+      }
+    }) as any
 
-  return membership?.role || null
+    // 現在のユーザーのロールを返す
+    const member = org?.members?.find((m: any) => m.userId === userId)
+    return member?.role || null
+  } catch (error) {
+    // エラー時は従来のDBクエリにフォールバック
+    const membership = await prisma.tenantMember.findUnique({
+      where: {
+        userId_tenantId: { userId, tenantId }
+      }
+    })
+
+    return membership?.role || null
+  }
 }

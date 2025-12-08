@@ -129,31 +129,3 @@ export async function requireGlobalAdmin() {
 
   return user
 }
-
-/**
- * Tenant管理権限チェック
- */
-export function canManageTenant(role: TenantRole): boolean {
-  return role === 'OWNER'
-}
-
-/**
- * ユーザー管理権限チェック
- */
-export function canManageUsers(role: TenantRole): boolean {
-  return role === 'OWNER' || role === 'ADMIN'
-}
-
-/**
- * プロジェクト作成権限チェック
- */
-export function canCreateProject(role: TenantRole): boolean {
-  return role === 'OWNER' || role === 'ADMIN'
-}
-
-/**
- * プロジェクトメンバー管理権限チェック
- */
-export function canManageProjectMembers(role: ProjectRole): boolean {
-  return role === 'ADMIN'
-}

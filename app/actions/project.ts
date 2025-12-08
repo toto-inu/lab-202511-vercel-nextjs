@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { requireTenantRole, requireProjectRole, canCreateProject } from '@/lib/auth/permission'
+import { requireTenantRole, requireProjectRole } from '@/lib/auth/permission'
 import { checkResourceLimit, getLimitErrorMessage } from '@/lib/plan-utils'
 
 /**
@@ -53,12 +53,8 @@ export async function createProject(tenantId: string, formData: FormData) {
     throw new Error('名前とスラッグは必須です')
   }
 
-  // 権限チェック
-  const { user, role } = await requireTenantRole(tenantId, ['OWNER', 'ADMIN'])
-
-  if (!canCreateProject(role)) {
-    throw new Error('プロジェクトを作成する権限がありません')
-  }
+  // 権限チェック（OWNER/ADMINのみプロジェクト作成可能）
+  const { user } = await requireTenantRole(tenantId, ['OWNER', 'ADMIN'])
 
   // プラン制限チェック
   const limitCheck = await checkResourceLimit(tenantId, 'projects')
