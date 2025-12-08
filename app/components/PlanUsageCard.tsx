@@ -59,7 +59,7 @@ export default async function PlanUsageCard({ tenantId, projectId }: PlanUsageCa
           const isUnlimited = item.limit === null || item.limit === -1
           const NEAR_LIMIT_THRESHOLD = 80
           const isNearLimit = !isUnlimited && item.percentage >= NEAR_LIMIT_THRESHOLD && item.percentage < 100
-          const isAtLimit = !isUnlimited && item.current >= item.limit
+          const isAtLimit = !isUnlimited && item.limit !== null && item.current >= item.limit
 
           let statusIcon = <CheckCircle className="h-5 w-5 text-green-500" />
           let statusText = '良好'

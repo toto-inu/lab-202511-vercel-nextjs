@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { createHandler } from "@premieroctet/next-admin/appHandler";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 
 const { run } = createHandler({
@@ -22,4 +22,15 @@ const { run } = createHandler({
   },
 });
 
-export { run as DELETE, run as GET, run as POST };
+// Next.js 15の型に合わせたラッパー関数
+async function handler(
+  req: NextRequest,
+  context: { params: Promise<{ nextadmin?: string[] }> }
+) {
+  const resolvedParams = await context.params;
+  return run(req as any, {
+    params: Promise.resolve({ nextadmin: resolvedParams.nextadmin || [] })
+  } as any);
+}
+
+export { handler as DELETE, handler as GET, handler as POST };

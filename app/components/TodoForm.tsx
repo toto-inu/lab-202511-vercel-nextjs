@@ -11,11 +11,12 @@ type AssigneeWithCount = Assignee & {
 
 type Props = {
   assignees: AssigneeWithCount[]
+  projectId: string
 }
 
-export default function TodoForm({ assignees }: Props) {
+export default function TodoForm({ assignees, projectId }: Props) {
   const handleSubmit = async (formData: FormData) => {
-    await createTodo(formData)
+    await createTodo(projectId, formData)
     // フォームをリセット
     const form = document.getElementById('todo-form') as HTMLFormElement
     form?.reset()

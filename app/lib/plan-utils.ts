@@ -35,7 +35,8 @@ export async function checkTrialExpiration(tenantId: string): Promise<{
     return { expired: false, daysLeft: -1 }
   }
 
-  const trialPeriodDays = tenant.plan.trialPeriodDays || 30
+  // Trial期間は30日固定（将来的にはPlanモデルに追加可能）
+  const trialPeriodDays = 30
   const createdAt = new Date(tenant.createdAt)
   const now = new Date()
   const daysPassed = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24))

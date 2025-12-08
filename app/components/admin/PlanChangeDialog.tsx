@@ -7,15 +7,7 @@
 import { useState, useEffect } from 'react'
 import { getAllPlans, updateTenantPlan } from '@/actions/admin'
 import { useRouter } from 'next/navigation'
-
-interface Plan {
-  id: string
-  name: string
-  price: number | null
-  maxProjects: number | null
-  maxUsers: number | null
-  maxTodos: number | null
-}
+import type { Plan } from '@prisma/client'
 
 interface Tenant {
   id: string
@@ -138,12 +130,12 @@ export default function PlanChangeDialog({ tenant, isOpen, onClose }: PlanChange
                         <div>
                           <span className="text-gray-600">ユーザー:</span>
                           <br />
-                          <span className="font-medium">{formatLimit(plan.maxUsers)}</span>
+                          <span className="font-medium">{formatLimit(plan.maxUsersPerTenant)}</span>
                         </div>
                         <div>
                           <span className="text-gray-600">Todo:</span>
                           <br />
-                          <span className="font-medium">{formatLimit(plan.maxTodos)}</span>
+                          <span className="font-medium">{formatLimit(plan.maxTodosPerProject)}</span>
                         </div>
                       </div>
                     </div>

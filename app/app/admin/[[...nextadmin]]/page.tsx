@@ -46,8 +46,7 @@ export default async function AdminPage({
     basePath: "/admin",
     apiBasePath: "/api/admin",
     prisma,
-    schema,
   });
 
-  return <NextAdmin {...props} />;
+  return <NextAdmin {...props} schema={schema} />;
 }

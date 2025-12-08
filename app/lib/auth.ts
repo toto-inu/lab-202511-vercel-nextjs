@@ -29,21 +29,8 @@ export const auth = betterAuth({
           },
         },
       },
-      // ロール定義
-      roles: {
-        owner: {
-          name: "OWNER",
-          permissions: ["create", "read", "update", "delete", "invite", "remove"],
-        },
-        admin: {
-          name: "ADMIN",
-          permissions: ["read", "update", "invite"],
-        },
-        member: {
-          name: "MEMBER",
-          permissions: ["read"],
-        },
-      },
+      // ロール定義は既存のPrisma enumを使用するため省略
+      // 権限チェックはlib/auth/permission.tsで実装
       // 招待メール送信（後で実装）
       async sendInvitationEmail(data) {
         // TODO: メール送信ロジック

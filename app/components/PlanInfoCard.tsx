@@ -6,15 +6,7 @@
 
 import { useState } from 'react'
 import PlanChangeDialog from './admin/PlanChangeDialog'
-
-interface Plan {
-  id: string
-  name: string
-  price: number | null
-  maxProjects: number | null
-  maxUsers: number | null
-  maxTodos: number | null
-}
+import type { Plan } from '@prisma/client'
 
 interface Tenant {
   id: string
@@ -78,11 +70,11 @@ export default function PlanInfoCard({ tenant, isGlobalAdmin }: PlanInfoCardProp
               </div>
               <div className="p-4 bg-gray-50 rounded-lg">
                 <div className="text-sm text-gray-600 mb-1">ユーザー数</div>
-                <div className="text-2xl font-bold">{formatLimit(tenant.plan.maxUsers)}</div>
+                <div className="text-2xl font-bold">{formatLimit(tenant.plan.maxUsersPerTenant)}</div>
               </div>
               <div className="p-4 bg-gray-50 rounded-lg">
                 <div className="text-sm text-gray-600 mb-1">Todo数</div>
-                <div className="text-2xl font-bold">{formatLimit(tenant.plan.maxTodos)}</div>
+                <div className="text-2xl font-bold">{formatLimit(tenant.plan.maxTodosPerProject)}</div>
               </div>
             </div>
           </div>
