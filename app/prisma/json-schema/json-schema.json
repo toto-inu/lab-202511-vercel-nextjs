@@ -261,6 +261,12 @@
         "user": {
           "$ref": "#/definitions/User"
         },
+        "activeOrganizationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
